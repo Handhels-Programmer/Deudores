@@ -70,3 +70,6 @@ Creación de Usuarios: Añadir una función para que el administrador pueda crea
 Historial de Transacciones: Guardar un registro de cada pago o modificación de deuda con su fecha, para que tanto el cliente como el administrador puedan ver un historial detallado.
 
 Conexión a APIs Externas: Implementar llamadas a APIs reales para obtener y mostrar la tasa del dólar y la información del clima en tiempo real.
+
+Vista previa
+https://handhels-programmer.github.io/Deudores/
