@@ -1,5 +1,5 @@
-
-<html lang="es">
+<!DOCTYPE html>
+<html lang="do">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -63,27 +63,35 @@
             <h1 id="client-welcome"></h1>
             <button class="logout-button">Cerrar Sesión</button>
         </div>
-        <div class="dashboard-content">
-            <div class="card">
-                <h3>Información del Perfil</h3>
-                <p><strong>Dirección:</strong> <span id="client-address"></span></p>
-                <p><strong>Contacto:</strong> <span id="client-contact"></span></p>
-                <p><strong>Cédula:</strong> <span id="client-id"></span></p>
-            </div>
-            <div class="card">
-                <h3>Estado de Cuenta</h3>
-                <p><strong>Monto Total Adeudado:</strong> RD$ <span id="total-debt"></span></p>
-                <p><strong>Total de Pagos Realizados:</strong> RD$ <span id="payments-made"></span></p>
-                <p class="balance"><strong>Balance Pendiente:</strong> RD$ <span id="current-balance"></span></p>
-                <div class="gemini-feature">
-                    <button id="get-financial-tips-button" class="gemini-button">✨ Recibir Consejos Financieros</button>
-                    <div id="financial-tips-container" class="gemini-response-container hidden">
-                        <div class="spinner-container">
-                            <div class="spinner"></div>
-                            <p>Generando consejos...</p>
+        <div class="dashboard-content-grid">
+             <div class="main-content-area">
+                <div class="card">
+                    <h3>Estado de Cuenta</h3>
+                    <p><strong>Monto Total Adeudado:</strong> RD$ <span id="total-debt"></span></p>
+                    <p><strong>Total de Pagos Realizados:</strong> RD$ <span id="payments-made"></span></p>
+                    <p class="balance"><strong>Balance Pendiente:</strong> RD$ <span id="current-balance"></span></p>
+                    <div class="gemini-feature">
+                        <button id="get-financial-tips-button" class="gemini-button">✨ Recibir Consejos Financieros</button>
+                        <div id="financial-tips-container" class="gemini-response-container hidden">
+                            <div class="spinner-container">
+                                <div class="spinner"></div>
+                                <p>Generando consejos...</p>
+                            </div>
+                            <div id="financial-tips-content" class="gemini-content"></div>
                         </div>
-                        <div id="financial-tips-content" class="gemini-content"></div>
                     </div>
+                </div>
+                <div class="card">
+                    <h3>Historial de Pagos</h3>
+                    <div id="payment-history-container"></div>
+                </div>
+            </div>
+            <div class="sidebar-area">
+                <div class="card">
+                    <h3>Información del Perfil</h3>
+                    <p><strong>Dirección:</strong> <span id="client-address"></span></p>
+                    <p><strong>Contacto:</strong> <span id="client-contact"></span></p>
+                    <p><strong>Cédula:</strong> <span id="client-id"></span></p>
                 </div>
             </div>
         </div>
