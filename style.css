@@ -8,6 +8,8 @@
     --text-light: #555;
     --white: #ffffff;
     --border-color: #ddd;
+    --gemini-blue: #1a73e8;
+    --gemini-blue-light: #e8f0fe;
 }
 
 body {
@@ -16,7 +18,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     margin: 0;
     color: var(--text-dark);
 }
@@ -128,162 +130,122 @@ body {
     width: 280px;
 }
 
-.info-box h2 {
-    font-size: 18px;
-    margin-top: 0;
-    margin-bottom: 15px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-}
-
+.info-box h2 { font-size: 18px; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
 .info-box p { margin: 5px 0; }
 .info-box small { color: #999; font-size: 12px; }
 .dollar-rate .rate { font-size: 28px; font-weight: 700; color: #28a745; }
 .weather .temperature { font-size: 28px; font-weight: 700; color: #007bff; }
 
 /* --- Estilos de los Dashboards --- */
-.dashboard {
-    background-color: var(--white);
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 20px;
-    margin-bottom: 20px;
-}
-
+.dashboard { background-color: var(--white); padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+.dashboard-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
 .dashboard-header h1 { margin: 0; font-size: 24px; }
-
-.logout-button {
-    padding: 10px 20px;
-    background-color: var(--secondary-color);
-    color: var(--white);
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s;
-}
-
+.logout-button { padding: 10px 20px; background-color: var(--secondary-color); color: var(--white); border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: background-color 0.3s; }
 .logout-button:hover { background-color: #5a6268; }
-
 .dashboard-content { display: flex; flex-direction: column; gap: 20px; }
-
-.card {
-    background-color: #f8f9fa;
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-}
-
-.card h3 {
-    margin-top: 0;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-}
-
+.card { background-color: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef; }
+.card h3 { margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; }
 .card p { line-height: 1.6; }
 .card .balance { margin-top: 15px; font-size: 18px; font-weight: 700; color: var(--primary-color); }
 
 /* Estilos para la tabla de administrador */
-#client-list-container table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-}
-
-#client-list-container th, #client-list-container td {
-    border: 1px solid var(--border-color);
-    padding: 12px;
-    text-align: left;
-    vertical-align: middle;
-}
-
+#client-list-container table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+#client-list-container th, #client-list-container td { border: 1px solid var(--border-color); padding: 12px; text-align: left; vertical-align: middle; }
 #client-list-container th { background-color: #e9ecef; font-weight: 700; }
-
-.button-manage {
-    padding: 8px 12px;
-    background-color: #007bff;
-    color: var(--white);
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
+.button-manage { padding: 8px 12px; background-color: #007bff; color: var(--white); border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s; }
 .button-manage:hover { background-color: #0056b3; }
 
-
 /* --- Estilos del Modal --- */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal-content {
-    background-color: var(--white);
-    padding: 25px;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 450px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 15px;
-    margin-bottom: 20px;
-}
-
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+.modal-content { background-color: var(--white); padding: 25px; border-radius: 8px; width: 90%; max-width: 450px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; }
 .modal-header h2 { margin: 0; font-size: 22px; }
+.close-button { background: none; border: none; font-size: 28px; cursor: pointer; color: var(--text-light); }
+.modal-info { font-size: 12px; color: var(--text-light); text-align: center; margin-top: 15px; }
+.button-primary { width: 100%; padding: 12px; background-color: var(--primary-color); color: var(--white); border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 700; margin-top: 10px; transition: background-color 0.3s; }
+.button-primary:hover { background-color: var(--primary-dark); }
 
-.close-button {
-    background: none;
-    border: none;
-    font-size: 28px;
-    cursor: pointer;
-    color: var(--text-light);
+/* --- Estilos para Funcionalidades de Gemini --- */
+.gemini-feature, .gemini-feature-modal {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
 }
 
-.modal-info {
-    font-size: 12px;
-    color: var(--text-light);
-    text-align: center;
-    margin-top: 15px;
-}
-
-.button-primary {
+.gemini-button {
     width: 100%;
     padding: 12px;
-    background-color: var(--primary-color);
-    color: var(--white);
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
     font-size: 16px;
-    font-weight: 700;
-    margin-top: 10px;
-    transition: background-color 0.3s;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--gemini-blue);
+    background-color: var(--gemini-blue-light);
+    color: var(--gemini-blue);
+    border-radius: 6px;
+    transition: background-color 0.3s, box-shadow 0.3s;
 }
 
-.button-primary:hover {
-    background-color: var(--primary-dark);
+.gemini-button:hover {
+    background-color: #d2e3fc;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.gemini-response-container {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: var(--white);
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+}
+
+.spinner-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: var(--text-light);
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--gemini-blue);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.gemini-content h4 {
+    margin-top: 0;
+    color: var(--text-dark);
+}
+
+.gemini-content ul {
+    padding-left: 20px;
+    margin-bottom: 0;
+}
+.gemini-content li {
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.payment-plan-card {
+    background-color: var(--gemini-blue-light);
+    border: 1px solid #a8c7fa;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+.payment-plan-card h5 {
+    margin: 0 0 10px 0;
+    color: #0b57d0;
+}
+.payment-plan-card p {
+    margin: 4px 0;
+    font-size: 14px;
 }
