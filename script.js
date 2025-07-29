@@ -72,7 +72,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const newDebt = parseFloat(document.getElementById('update-debt').value);
 
         if (newPayment > 0) {
-            user.account.paymentsMade += newPayment;
+            user.account.paymentHistory.push({
+                amount: newPayment,
+                date: new Date().toISOString()
+            });
         }
         if (!isNaN(newDebt) && newDebt >= 0) {
             user.account.totalDebt = newDebt;
@@ -87,7 +90,8 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleGetFinancialTips(event) {
         const username = event.target.dataset.username;
         const user = users[username];
-        const balance = user.account.totalDebt - user.account.paymentsMade;
+        const totalPayments = user.account.paymentHistory.reduce((sum, p) => sum + p.amount, 0);
+        const balance = user.account.totalDebt - totalPayments;
         
         const container = document.getElementById('financial-tips-container');
         const contentDiv = document.getElementById('financial-tips-content');
@@ -113,7 +117,8 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleSuggestPaymentPlan(event) {
         const username = event.target.dataset.username;
         const user = users[username];
-        const balance = user.account.totalDebt - user.account.paymentsMade;
+        const totalPayments = user.account.paymentHistory.reduce((sum, p) => sum + p.amount, 0);
+        const balance = user.account.totalDebt - totalPayments;
 
         const container = document.getElementById('payment-plan-container');
         const contentDiv = document.getElementById('payment-plan-content');
@@ -163,20 +168,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showClientDashboard(userData, username) {
         clientDashboard.classList.remove('hidden');
-        const balance = userData.account.totalDebt - userData.account.paymentsMade;
+        const totalPayments = userData.account.paymentHistory.reduce((sum, p) => sum + p.amount, 0);
+        const balance = userData.account.totalDebt - totalPayments;
 
         document.getElementById('client-welcome').textContent = `Bienvenido, ${userData.profile.fullName}`;
         document.getElementById('client-address').textContent = userData.profile.address;
         document.getElementById('client-contact').textContent = userData.profile.contact;
         document.getElementById('client-id').textContent = userData.profile.idNumber;
         document.getElementById('total-debt').textContent = userData.account.totalDebt.toLocaleString('es-DO');
-        document.getElementById('payments-made').textContent = userData.account.paymentsMade.toLocaleString('es-DO');
+        document.getElementById('payments-made').textContent = totalPayments.toLocaleString('es-DO');
         document.getElementById('current-balance').textContent = balance.toLocaleString('es-DO');
         
-        // Asignar el username al botón de Gemini para usarlo en el prompt
+        renderPaymentHistory(userData.account.paymentHistory);
+        
         getFinancialTipsButton.dataset.username = username;
-        // Ocultar el contenedor de respuesta de gemini al recargar
         document.getElementById('financial-tips-container').classList.add('hidden');
+    }
+
+    function renderPaymentHistory(history) {
+        const container = document.getElementById('payment-history-container');
+        if (history.length === 0) {
+            container.innerHTML = '<p>No se han registrado pagos.</p>';
+            return;
+        }
+
+        // Ordenar historial por fecha, de más reciente a más antiguo
+        const sortedHistory = [...history].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        let tableHTML = `
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Monto Pagado</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+        sortedHistory.forEach(payment => {
+            const paymentDate = new Date(payment.date);
+            const formattedDate = paymentDate.toLocaleDateString('es-DO', {
+                year: 'numeric', month: 'long', day: 'numeric'
+            });
+            tableHTML += `
+                <tr>
+                    <td>${formattedDate}</td>
+                    <td>RD$ ${payment.amount.toLocaleString('es-DO')}</td>
+                </tr>`;
+        });
+
+        tableHTML += `</tbody></table>`;
+        container.innerHTML = tableHTML;
     }
 
     function showAdminDashboard() {
@@ -200,12 +242,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 <tbody>`;
 
         clientUsers.forEach(([username, client]) => {
-            const balance = client.account.totalDebt - client.account.paymentsMade;
+            const totalPayments = client.account.paymentHistory.reduce((sum, p) => sum + p.amount, 0);
+            const balance = client.account.totalDebt - totalPayments;
             tableHTML += `
                 <tr>
                     <td>${client.profile.fullName}</td>
                     <td>RD$ ${client.account.totalDebt.toLocaleString('es-DO')}</td>
-                    <td>RD$ ${client.account.paymentsMade.toLocaleString('es-DO')}</td>
+                    <td>RD$ ${totalPayments.toLocaleString('es-DO')}</td>
                     <td>RD$ ${balance.toLocaleString('es-DO')}</td>
                     <td>
                         <button class="button-manage" data-username="${username}">Gestionar</button>
@@ -225,8 +268,6 @@ document.addEventListener('DOMContentLoaded', () => {
         manageClientForm.dataset.username = username;
         suggestPaymentPlanButton.dataset.username = username;
         manageClientModal.classList.remove('hidden');
-        
-        // Ocultar el contenedor de respuesta de gemini al abrir
         document.getElementById('payment-plan-container').classList.add('hidden');
     }
 
@@ -280,19 +321,35 @@ const users = {
         password: '123',
         role: 'cliente',
         profile: { fullName: 'Juan Pérez', address: 'Calle Falsa 123, Santo Domingo', contact: '809-123-4567', idNumber: '001-1234567-8' },
-        account: { totalDebt: 50000, paymentsMade: 15000 }
+        account: { 
+            totalDebt: 50000, 
+            paymentHistory: [
+                { amount: 5000, date: '2025-06-15T14:00:00Z' },
+                { amount: 10000, date: '2025-07-16T15:30:00Z' }
+            ] 
+        }
     },
     'mariagomez': {
         password: '456',
         role: 'cliente',
         profile: { fullName: 'Maria Gómez', address: 'Avenida Siempreviva 742, Santiago', contact: '829-987-6543', idNumber: '002-7654321-0' },
-        account: { totalDebt: 125000, paymentsMade: 75000 }
+        account: { 
+            totalDebt: 125000, 
+            paymentHistory: [
+                { amount: 25000, date: '2025-05-20T10:00:00Z' },
+                { amount: 25000, date: '2025-06-20T11:00:00Z' },
+                { amount: 25000, date: '2025-07-21T12:00:00Z' }
+            ] 
+        }
     },
     'carlosrodriguez': {
         password: '789',
         role: 'cliente',
         profile: { fullName: 'Carlos Rodríguez', address: 'Plaza Central, Local 5, Punta Cana', contact: '849-555-0101', idNumber: '003-1122334-5' },
-        account: { totalDebt: 2500, paymentsMade: 0 }
+        account: { 
+            totalDebt: 2500, 
+            paymentHistory: [] 
+        }
     },
     'admin': {
         password: 'admin',
