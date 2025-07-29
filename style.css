@@ -17,10 +17,11 @@ body {
     background-color: var(--background-light);
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; /* Alinea al top para el scroll */
     min-height: 100vh;
     margin: 0;
     color: var(--text-dark);
+    padding: 20px 0; /* Espacio vertical */
 }
 
 /* Contenedor Principal y Dashboards */
@@ -143,15 +144,19 @@ body {
 .logout-button { padding: 10px 20px; background-color: var(--secondary-color); color: var(--white); border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: background-color 0.3s; }
 .logout-button:hover { background-color: #5a6268; }
 .dashboard-content { display: flex; flex-direction: column; gap: 20px; }
+.dashboard-content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+.main-content-area { display: flex; flex-direction: column; gap: 20px; }
+.sidebar-area { display: flex; flex-direction: column; gap: 20px; }
+
 .card { background-color: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef; }
 .card h3 { margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; }
 .card p { line-height: 1.6; }
 .card .balance { margin-top: 15px; font-size: 18px; font-weight: 700; color: var(--primary-color); }
 
-/* Estilos para la tabla de administrador */
-#client-list-container table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-#client-list-container th, #client-list-container td { border: 1px solid var(--border-color); padding: 12px; text-align: left; vertical-align: middle; }
-#client-list-container th { background-color: #e9ecef; font-weight: 700; }
+/* Estilos para la tabla de administrador y historial de pagos */
+#client-list-container table, #payment-history-container table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+#client-list-container th, #client-list-container td, #payment-history-container th, #payment-history-container td { border: 1px solid var(--border-color); padding: 12px; text-align: left; vertical-align: middle; }
+#client-list-container th, #payment-history-container th { background-color: #e9ecef; font-weight: 700; }
 .button-manage { padding: 8px 12px; background-color: #007bff; color: var(--white); border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s; }
 .button-manage:hover { background-color: #0056b3; }
 
@@ -166,86 +171,27 @@ body {
 .button-primary:hover { background-color: var(--primary-dark); }
 
 /* --- Estilos para Funcionalidades de Gemini --- */
-.gemini-feature, .gemini-feature-modal {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border-color);
-}
+.gemini-feature, .gemini-feature-modal { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color); }
+.gemini-button { width: 100%; padding: 12px; font-size: 16px; font-weight: 500; cursor: pointer; border: 1px solid var(--gemini-blue); background-color: var(--gemini-blue-light); color: var(--gemini-blue); border-radius: 6px; transition: background-color 0.3s, box-shadow 0.3s; }
+.gemini-button:hover { background-color: #d2e3fc; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.gemini-response-container { margin-top: 15px; padding: 15px; background-color: var(--white); border: 1px solid #e0e0e0; border-radius: 8px; }
+.spinner-container { display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--text-light); }
+.spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--gemini-blue); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.gemini-content h4 { margin-top: 0; color: var(--text-dark); }
+.gemini-content ul { padding-left: 20px; margin-bottom: 0; }
+.gemini-content li { margin-bottom: 10px; line-height: 1.5; }
+.payment-plan-card { background-color: var(--gemini-blue-light); border: 1px solid #a8c7fa; border-radius: 6px; padding: 15px; margin-bottom: 10px; }
+.payment-plan-card h5 { margin: 0 0 10px 0; color: #0b57d0; }
+.payment-plan-card p { margin: 4px 0; font-size: 14px; }
 
-.gemini-button {
-    width: 100%;
-    padding: 12px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    border: 1px solid var(--gemini-blue);
-    background-color: var(--gemini-blue-light);
-    color: var(--gemini-blue);
-    border-radius: 6px;
-    transition: background-color 0.3s, box-shadow 0.3s;
-}
-
-.gemini-button:hover {
-    background-color: #d2e3fc;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.gemini-response-container {
-    margin-top: 15px;
-    padding: 15px;
-    background-color: var(--white);
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-}
-
-.spinner-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    color: var(--text-light);
-}
-
-.spinner {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid var(--gemini-blue);
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.gemini-content h4 {
-    margin-top: 0;
-    color: var(--text-dark);
-}
-
-.gemini-content ul {
-    padding-left: 20px;
-    margin-bottom: 0;
-}
-.gemini-content li {
-    margin-bottom: 10px;
-    line-height: 1.5;
-}
-
-.payment-plan-card {
-    background-color: var(--gemini-blue-light);
-    border: 1px solid #a8c7fa;
-    border-radius: 6px;
-    padding: 15px;
-    margin-bottom: 10px;
-}
-.payment-plan-card h5 {
-    margin: 0 0 10px 0;
-    color: #0b57d0;
-}
-.payment-plan-card p {
-    margin: 4px 0;
-    font-size: 14px;
+/* Media Queries para Responsividad */
+@media (max-width: 768px) {
+    .dashboard-content-grid {
+        grid-template-columns: 1fr; /* Apila las columnas en pantallas pequeñas */
+    }
+    .login-container {
+        flex-direction: column;
+        align-items: center;
+    }
 }
