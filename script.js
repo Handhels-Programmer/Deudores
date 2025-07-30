@@ -1,5 +1,8 @@
 // --- EVENT LISTENERS ---
 document.addEventListener('DOMContentLoaded', () => {
+    // Variable temporal para almacenar datos del nuevo cliente
+    let tempNewClientData = null;
+
     // Referencias a elementos del DOM
     const loginForm = document.getElementById('login-form');
     const mainContainer = document.getElementById('main-container');
@@ -17,6 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const createClientButton = document.getElementById('create-client-button');
     const createClientForm = document.getElementById('create-client-form');
     
+    // Referencias al Modal de Planes de Pago
+    const paymentPlanModal = document.getElementById('payment-plan-modal');
+    const selectPlanForm = document.getElementById('select-plan-form');
+    
     // Asignación de eventos
     loginForm.addEventListener('submit', handleLogin);
     logoutButtons.forEach(button => button.addEventListener('click', handleLogout));
@@ -33,7 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
         createClientForm.reset();
         document.getElementById('create-error-message').classList.remove('show');
     });
-    createClientForm.addEventListener('submit', handleCreateClient);
+    createClientForm.addEventListener('submit', handleGeneratePlans);
+    
+    // Eventos del Modal de Planes de Pago
+    paymentPlanModal.querySelector('.close-modal-button').addEventListener('click', () => paymentPlanModal.classList.add('hidden'));
+    selectPlanForm.addEventListener('submit', handleConfirmPlan);
 
 
     // --- MANEJADORES DE EVENTOS ---
@@ -96,57 +107,112 @@ document.addEventListener('DOMContentLoaded', () => {
         renderClientList();
     }
 
-    function handleCreateClient(event) {
+    function handleGeneratePlans(event) {
         event.preventDefault();
         const errorMessage = document.getElementById('create-error-message');
         
-        // Recoger datos del formulario
         const newUsername = document.getElementById('new-username').value.toLowerCase().trim();
-        const newPassword = document.getElementById('new-password').value;
-        const newFullname = document.getElementById('new-fullname').value.trim();
-        const newAddress = document.getElementById('new-address').value;
-        const newContact = document.getElementById('new-contact').value;
-        const newIdNumber = document.getElementById('new-idnumber').value;
-        const initialDebt = parseFloat(document.getElementById('initial-debt').value) || 0;
-
-        // Validación
-        if (!newUsername || !newPassword || !newFullname) {
-            errorMessage.textContent = 'Nombre, usuario y contraseña son obligatorios.';
-            errorMessage.classList.add('show');
-            return;
-        }
         if (users[newUsername]) {
             errorMessage.textContent = 'El nombre de usuario ya existe.';
             errorMessage.classList.add('show');
             return;
         }
 
-        // Crear nuevo usuario
-        users[newUsername] = {
-            password: newPassword,
+        tempNewClientData = {
+            username: newUsername,
+            password: document.getElementById('new-password').value,
             role: 'cliente',
             profile: {
-                fullName: newFullname,
-                address: newAddress,
-                contact: newContact,
-                idNumber: newIdNumber
+                fullName: document.getElementById('new-fullname').value.trim(),
+                address: document.getElementById('new-address').value,
+                contact: document.getElementById('new-contact').value,
+                idNumber: document.getElementById('new-idnumber').value
             },
             account: {
-                totalDebt: initialDebt,
-                paymentHistory: []
+                totalDebt: parseFloat(document.getElementById('initial-debt').value),
+                paymentHistory: [],
+                paymentPlan: {}
             }
         };
 
-        // Limpiar y cerrar modal
-        errorMessage.classList.remove('show');
-        createClientForm.reset();
+        const initialDebt = tempNewClientData.account.totalDebt;
+        const termInMonths = parseInt(document.getElementById('loan-term').value);
+        const monthlyInterestRateInput = parseFloat(document.getElementById('interest-rate').value);
+
+        calculateAndShowPlans(initialDebt, termInMonths, monthlyInterestRateInput);
+
         createClientModal.classList.add('hidden');
+        paymentPlanModal.classList.remove('hidden');
+        errorMessage.classList.remove('show');
+    }
+
+    function handleConfirmPlan(event) {
+        event.preventDefault();
+        const selectedPlanInput = document.querySelector('input[name="payment-plan"]:checked');
+        const errorMessage = document.getElementById('plan-error-message');
+
+        if (!selectedPlanInput) {
+            errorMessage.textContent = 'Debe seleccionar un plan de pago.';
+            errorMessage.classList.add('show');
+            return;
+        }
         
-        // Actualizar la lista de clientes en el dashboard del admin
+        const planData = JSON.parse(selectedPlanInput.value);
+        tempNewClientData.account.paymentPlan = planData;
+        
+        users[tempNewClientData.username] = tempNewClientData;
+
+        tempNewClientData = null;
+        paymentPlanModal.classList.add('hidden');
+        createClientForm.reset();
         renderClientList();
     }
 
-    // --- LÓGICA DE VISTAS Y MODALES ---
+    // --- LÓGICA DE CÁLCULO Y VISTAS ---
+
+    function calculateAndShowPlans(principal, termInMonths, monthlyInterest) {
+        const container = document.getElementById('plan-options-container');
+        container.innerHTML = ''; // Limpiar opciones anteriores
+
+        const monthlyInterestRate = monthlyInterest / 100;
+
+        // Plan 1: Mensual
+        const monthlyPayment = monthlyInterestRate > 0 ?
+            principal * [monthlyInterestRate * Math.pow(1 + monthlyInterestRate, termInMonths)] / [Math.pow(1 + monthlyInterestRate, termInMonths) - 1] :
+            principal / termInMonths;
+        const totalMonthly = monthlyPayment * termInMonths;
+        
+        // Plan 2: Quincenal (Acelerado)
+        const biweeklyPayments = termInMonths * 2;
+        const biweeklyPayment = monthlyPayment / 2;
+        const totalBiweekly = biweeklyPayment * biweeklyPayments;
+
+        // Plan 3: Semanal (Acelerado)
+        const weeklyPayments = termInMonths * 4;
+        const weeklyPayment = monthlyPayment / 4;
+        const totalWeekly = weeklyPayment * weeklyPayments;
+
+        const plans = [
+            { name: 'Plan Mensual', frequency: 'Mensual', amount: monthlyPayment, total: totalMonthly, installments: termInMonths },
+            { name: 'Plan Quincenal', frequency: 'Quincenal', amount: biweeklyPayment, total: totalBiweekly, installments: biweeklyPayments },
+            { name: 'Plan Semanal', frequency: 'Semanal', amount: weeklyPayment, total: totalWeekly, installments: weeklyPayments }
+        ];
+
+        plans.forEach((plan, index) => {
+            const planData = JSON.stringify({ frequency: plan.frequency, amount: plan.amount });
+            const planElement = document.createElement('label');
+            planElement.className = 'plan-option';
+            planElement.innerHTML = `
+                <input type="radio" name="payment-plan" value='${planData}' id="plan-${index}">
+                <div class="plan-details">
+                    <h4>${plan.name}</h4>
+                    <p>${plan.installments} cuotas de <strong>RD$ ${plan.amount.toFixed(2)}</strong></p>
+                    <p class="plan-total">Total a pagar: RD$ ${plan.total.toFixed(2)}</p>
+                </div>
+            `;
+            container.appendChild(planElement);
+        });
+    }
 
     function showClientDashboard(userData) {
         clientDashboard.classList.remove('hidden');
@@ -162,6 +228,15 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('current-balance').textContent = balance.toLocaleString('es-DO');
         
         renderPaymentHistory(userData.account.paymentHistory);
+        
+        const planCard = document.getElementById('client-plan-card');
+        if (userData.account.paymentPlan && userData.account.paymentPlan.frequency) {
+            document.getElementById('plan-frequency').textContent = userData.account.paymentPlan.frequency;
+            document.getElementById('plan-amount').textContent = userData.account.paymentPlan.amount.toFixed(2);
+            planCard.classList.remove('hidden');
+        } else {
+            planCard.classList.add('hidden');
+        }
     }
 
     function renderPaymentHistory(history) {
@@ -257,7 +332,8 @@ const users = {
             paymentHistory: [
                 { amount: 5000, date: '2025-06-15T14:00:00Z' },
                 { amount: 10000, date: '2025-07-16T15:30:00Z' }
-            ] 
+            ],
+            paymentPlan: { frequency: 'Mensual', amount: 5500 }
         }
     },
     'mariagomez': {
@@ -270,7 +346,8 @@ const users = {
                 { amount: 25000, date: '2025-05-20T10:00:00Z' },
                 { amount: 25000, date: '2025-06-20T11:00:00Z' },
                 { amount: 25000, date: '2025-07-21T12:00:00Z' }
-            ] 
+            ],
+            paymentPlan: { frequency: 'Quincenal', amount: 12500 }
         }
     },
     'carlosrodriguez': {
@@ -279,7 +356,8 @@ const users = {
         profile: { fullName: 'Carlos Rodríguez', address: 'Plaza Central, Local 5, Punta Cana', contact: '849-555-0101', idNumber: '003-1122334-5' },
         account: { 
             totalDebt: 2500, 
-            paymentHistory: [] 
+            paymentHistory: [],
+            paymentPlan: {}
         }
     },
     'admin': {
