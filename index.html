@@ -4,21 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Deudores - Iniciar Sesión</title>
-    <!-- Google Fonts para un look más moderno -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Referencia al archivo de estilos CSS -->
+    <!-- Archivo de estilos CSS -->
     <link rel="stylesheet" href="estiloh.css">
 </head>
 <body>
 
-    <!-- Contenedor Principal que se mostrará al cargar -->
+    <!-- Contenedor Principal -->
     <main id="main-container">
         <div class="login-container">
             <div class="login-box">
                 <h1 class="title">Deudores</h1>
-                <!-- Formulario de Login -->
                 <form id="login-form">
                     <div class="input-group">
                         <label for="username">Nombre de Usuario</label>
@@ -28,7 +27,6 @@
                         <label for="role">Tipo de Usuario</label>
                         <select id="role" name="role">
                             <option value="cliente">Cliente</option>
-                            <option value="cobrador">Cobrador</option>
                             <option value="administrador">Administrador</option>
                         </select>
                     </div>
@@ -36,7 +34,6 @@
                         <label for="password">Contraseña</label>
                         <input type="password" id="password" name="password" required>
                     </div>
-                    <!-- Mensaje de error (inicialmente oculto) -->
                     <p id="error-message" class="error-message"></p>
                     <button type="submit" class="login-button">Entrar</button>
                 </form>
@@ -44,21 +41,21 @@
 
             <div class="info-container">
                 <div class="info-box dollar-rate">
-                    <h2>Tasa del Dólar (USD a DOP)</h2>
-                    <p class="rate">58.75</p>
-                    <small>Ejemplo</small>
+                    <h2>Tasa del Dólar (Venta)</h2>
+                    <p id="dollar-rate-value" class="rate">Cargando...</p>
+                    <small>Fuente: API Pública</small>
                 </div>
                 <div class="info-box weather">
                     <h2>Clima en Santo Domingo</h2>
-                    <p class="temperature">28°C</p>
-                    <p class="condition">Parcialmente Nublado</p>
-                    <small>Ejemplo</small>
+                    <p id="weather-temp" class="temperature">Cargando...</p>
+                    <p id="weather-condition" class="condition">Cargando...</p>
+                    <small>Fuente: API Pública</small>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Vista del Dashboard del Cliente (inicialmente oculta) -->
+    <!-- Dashboard del Cliente -->
     <section id="client-dashboard" class="dashboard hidden">
         <div class="dashboard-header">
             <h1 id="client-welcome"></h1>
@@ -97,39 +94,36 @@
         </div>
     </section>
 
-    <!-- Vista del Dashboard del Administrador (inicialmente oculta) -->
+    <!-- Dashboard del Administrador -->
     <section id="admin-dashboard" class="dashboard hidden">
         <div class="dashboard-header">
             <h1>Panel de Administración</h1>
             <button class="logout-button">Cerrar Sesión</button>
         </div>
+        <div class="summary-cards">
+            <div class="summary-card">
+                <h4>Clientes Totales</h4>
+                <p id="total-clients">0</p>
+            </div>
+            <div class="summary-card">
+                <h4>Deuda Total Pendiente</h4>
+                <p id="total-outstanding-debt">RD$ 0.00</p>
+            </div>
+            <div class="summary-card">
+                <h4>Total Recaudado</h4>
+                <p id="total-collected">RD$ 0.00</p>
+            </div>
+        </div>
         <div class="dashboard-content">
             <div class="card">
-                <h3>Pagos Pendientes de Aprobación</h3>
-                <div id="pending-payments-container"></div>
-            </div>
-            <div class="card">
-                <h3>Gestión de Usuarios</h3>
+                <h3>Gestión de Clientes</h3>
                 <div class="admin-actions">
-                    <p>Gestiona la lista de clientes o crea nuevos usuarios (clientes o cobradores).</p>
-                    <button id="create-user-button" class="button-new-client">Crear Nuevo Usuario</button>
+                    <div class="search-container">
+                        <input type="text" id="client-search-input" placeholder="Buscar cliente por nombre...">
+                    </div>
+                    <button id="create-client-button" class="button-new-client">Crear Nuevo Cliente</button>
                 </div>
                 <div id="client-list-container"></div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- Vista del Dashboard del Cobrador (inicialmente oculta) -->
-    <section id="collector-dashboard" class="dashboard hidden">
-        <div class="dashboard-header">
-            <h1 id="collector-welcome"></h1>
-            <button class="logout-button">Cerrar Sesión</button>
-        </div>
-        <div class="dashboard-content">
-            <div class="card">
-                <h3>Registrar Pagos de Clientes</h3>
-                <p>Seleccione un cliente para registrar un pago.</p>
-                <div id="collector-client-list-container"></div>
             </div>
         </div>
     </section>
@@ -144,7 +138,7 @@
             <div class="modal-body">
                 <form id="manage-client-form">
                     <div class="input-group">
-                        <label for="new-payment">Registrar Nuevo Pago (Aprobado)</label>
+                        <label for="new-payment">Registrar Nuevo Pago (RD$)</label>
                         <input type="number" id="new-payment" placeholder="0.00" min="0">
                     </div>
                     <hr>
@@ -164,89 +158,34 @@
         </div>
     </div>
 
-    <!-- Modal para registrar pago (Cobrador) -->
-    <div id="register-payment-modal" class="modal-overlay hidden">
+    <!-- Modal para crear cliente (Admin) -->
+    <div id="create-client-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="register-payment-client-name"></h2>
+                <h2>Crear Nuevo Cliente</h2>
                 <button class="close-modal-button">&times;</button>
             </div>
             <div class="modal-body">
-                <form id="register-payment-form">
-                    <div class="input-group">
-                        <label for="collector-payment-amount">Monto del Pago (RD$)</label>
-                        <input type="number" id="collector-payment-amount" placeholder="0.00" min="1" required>
+                <form id="create-client-form">
+                    <div id="personal-data-step">
+                        <h4>Paso 1: Datos Personales y Credenciales</h4>
+                        <div class="input-group"><label for="new-fullname">Nombre Completo</label><input type="text" id="new-fullname" required></div>
+                        <div class="input-group"><label for="new-username">Nombre de Usuario</label><input type="text" id="new-username" required></div>
+                        <div class="input-group"><label for="new-password">Contraseña</label><input type="password" id="new-password" required></div>
+                        <div class="input-group"><label for="new-address">Dirección</label><input type="text" id="new-address"></div>
+                        <div class="input-group"><label for="new-contact">Contacto</label><input type="text" id="new-contact"></div>
+                        <div class="input-group"><label for="new-idnumber">Cédula</label><input type="text" id="new-idnumber"></div>
+                        <p id="create-error-message-step1" class="error-message"></p>
+                        <button type="button" id="next-step-button" class="button-primary">Siguiente</button>
                     </div>
-                    <button type="submit" class="button-primary">Registrar Pago</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal para crear usuario (Admin) -->
-    <div id="create-user-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Crear Nuevo Usuario</h2>
-                <button class="close-modal-button">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="create-user-form">
-                    <div class="input-group">
-                        <label for="new-user-role">Tipo de Usuario</label>
-                        <select id="new-user-role" required>
-                            <option value="cliente">Cliente</option>
-                            <option value="cobrador">Cobrador</option>
-                        </select>
+                    <div id="loan-conditions-step" class="hidden">
+                        <h4>Paso 2: Condiciones del Préstamo</h4>
+                        <div class="input-group"><label for="initial-debt">Deuda Inicial (RD$)</label><input type="number" id="initial-debt" min="1" required></div>
+                        <div class="input-group"><label for="loan-term">Plazo del Préstamo (meses)</label><input type="number" id="loan-term" min="1" required></div>
+                        <div class="input-group"><label for="interest-rate">Tasa de Interés Mensual (%)</label><input type="number" id="interest-rate" min="0" step="0.1" required></div>
+                        <div class="input-group"><label for="late-fee-rate">Tasa de Mora Mensual (%)</label><input type="number" id="late-fee-rate" min="0" step="0.1" required></div>
+                        <div class="form-navigation"><button type="button" id="prev-step-button" class="button-secondary">Atrás</button><button type="submit" class="button-primary">Generar Planes de Pago</button></div>
                     </div>
-                    <hr>
-                    <h4>Datos Personales y Credenciales</h4>
-                    <div class="input-group">
-                        <label for="new-fullname">Nombre Completo</label>
-                        <input type="text" id="new-fullname" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="new-username">Nombre de Usuario</label>
-                        <input type="text" id="new-username" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="new-password">Contraseña</label>
-                        <input type="password" id="new-password" required>
-                    </div>
-                    <div id="client-specific-fields">
-                        <div class="input-group">
-                            <label for="new-address">Dirección</label>
-                            <input type="text" id="new-address">
-                        </div>
-                        <div class="input-group">
-                            <label for="new-contact">Contacto</label>
-                            <input type="text" id="new-contact">
-                        </div>
-                        <div class="input-group">
-                            <label for="new-idnumber">Cédula</label>
-                            <input type="text" id="new-idnumber">
-                        </div>
-                        <hr>
-                        <h4>Condiciones del Préstamo</h4>
-                        <div class="input-group">
-                            <label for="initial-debt">Deuda Inicial (RD$)</label>
-                            <input type="number" id="initial-debt" min="1" required>
-                        </div>
-                        <div class="input-group">
-                            <label for="loan-term">Plazo del Préstamo (meses)</label>
-                            <input type="number" id="loan-term" min="1" required>
-                        </div>
-                        <div class="input-group">
-                            <label for="interest-rate">Tasa de Interés Mensual (%)</label>
-                            <input type="number" id="interest-rate" min="0" step="0.1" required>
-                        </div>
-                        <div class="input-group">
-                            <label for="late-fee-rate">Tasa de Mora Mensual (%)</label>
-                            <input type="number" id="late-fee-rate" min="0" step="0.1" required>
-                        </div>
-                    </div>
-                    <p id="create-error-message" class="error-message"></p>
-                    <button type="submit" class="button-primary">Siguiente</button>
                 </form>
             </div>
         </div>
@@ -257,7 +196,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Seleccionar Plan de Pago</h2>
-                 <button class="close-modal-button">&times;</button>
+                <button class="close-modal-button">&times;</button>
             </div>
             <div class="modal-body">
                 <p>Elija el plan de pago para el nuevo cliente.</p>
@@ -269,7 +208,12 @@
             </div>
         </div>
     </div>
+    
+    <!-- Elemento para notificaciones (toast) -->
+    <div id="notification-toast" class="toast hidden"></div>
 
-    <script src="scripth.js"></script>
+    <!-- Se eliminó el bloque de script de Firebase -->
+    
+    <script src="scripht.js"></script>
 </body>
 </html>
