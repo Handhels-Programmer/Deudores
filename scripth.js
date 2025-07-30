@@ -559,7 +559,7 @@ const users = {
         role: 'administrador',
         profile: { fullName: 'Administrador Principal' }
     },
-    'cobrador1': {
+    'cobrador': {
         password: 'cob',
         role: 'cobrador',
         profile: { fullName: 'Carlos Cobrador' }
