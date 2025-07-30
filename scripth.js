@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else { // Es Cobrador
             users[newUsername] = tempNewUserData;
             closeCreateUserModal();
-            // Aquí se podría renderizar una lista de cobradores también si se quisiera.
+            renderClientList(); // Refresh admin view
         }
         errorMessage.classList.remove('show');
     }
