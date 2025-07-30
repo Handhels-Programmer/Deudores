@@ -83,6 +83,11 @@
                     <p><strong>Contacto:</strong> <span id="client-contact"></span></p>
                     <p><strong>Cédula:</strong> <span id="client-id"></span></p>
                 </div>
+                 <div id="client-plan-card" class="card hidden">
+                    <h3>Mi Plan de Pago</h3>
+                    <p><strong>Frecuencia:</strong> <span id="plan-frequency"></span></p>
+                    <p><strong>Monto por Cuota:</strong> RD$ <span id="plan-amount"></span></p>
+                </div>
             </div>
         </div>
     </section>
@@ -139,6 +144,7 @@
             </div>
             <div class="modal-body">
                 <form id="create-client-form">
+                    <h4>Datos Personales y Credenciales</h4>
                     <div class="input-group">
                         <label for="new-fullname">Nombre Completo</label>
                         <input type="text" id="new-fullname" required>
@@ -163,12 +169,42 @@
                         <label for="new-idnumber">Cédula</label>
                         <input type="text" id="new-idnumber">
                     </div>
+                    <hr>
+                    <h4>Condiciones del Préstamo</h4>
                      <div class="input-group">
                         <label for="initial-debt">Deuda Inicial (RD$)</label>
-                        <input type="number" id="initial-debt" min="0" value="0" required>
+                        <input type="number" id="initial-debt" min="1" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="loan-term">Plazo del Préstamo (meses)</label>
+                        <input type="number" id="loan-term" min="1" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="interest-rate">Tasa de Interés Mensual (%)</label>
+                        <input type="number" id="interest-rate" min="0" step="0.1" required>
                     </div>
                     <p id="create-error-message" class="error-message"></p>
-                    <button type="submit" class="button-primary">Crear Cliente</button>
+                    <button type="submit" class="button-primary">Generar Planes de Pago</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para seleccionar plan de pago -->
+    <div id="payment-plan-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Seleccionar Plan de Pago</h2>
+                 <button class="close-modal-button">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Elija el plan de pago para el nuevo cliente.</p>
+                <form id="select-plan-form">
+                    <div id="plan-options-container">
+                        <!-- Las opciones se generarán con JS -->
+                    </div>
+                    <p id="plan-error-message" class="error-message"></p>
+                    <button type="submit" class="button-primary">Confirmar Plan y Crear Cliente</button>
                 </form>
             </div>
         </div>
