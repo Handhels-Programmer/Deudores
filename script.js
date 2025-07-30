@@ -13,18 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const manageClientForm = document.getElementById('manage-client-form');
     const clientListContainer = document.getElementById('client-list-container');
 
-    // Referencias a Funcionalidades de Gemini
-    const getFinancialTipsButton = document.getElementById('get-financial-tips-button');
-    const suggestPaymentPlanButton = document.getElementById('suggest-payment-plan-button');
-
     // Asignación de eventos
     loginForm.addEventListener('submit', handleLogin);
     logoutButtons.forEach(button => button.addEventListener('click', handleLogout));
     closeModalButton.addEventListener('click', closeManagementModal);
     manageClientForm.addEventListener('submit', handleSaveChanges);
     clientListContainer.addEventListener('click', handleClientListClick);
-    getFinancialTipsButton.addEventListener('click', handleGetFinancialTips);
-    suggestPaymentPlanButton.addEventListener('click', handleSuggestPaymentPlan);
 
     // --- MANEJADORES DE EVENTOS ---
 
@@ -85,85 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderClientList();
     }
 
-    // --- MANEJADORES DE EVENTOS DE GEMINI ---
-    
-    async function handleGetFinancialTips(event) {
-        const username = event.target.dataset.username;
-        const user = users[username];
-        const totalPayments = user.account.paymentHistory.reduce((sum, p) => sum + p.amount, 0);
-        const balance = user.account.totalDebt - totalPayments;
-        
-        const container = document.getElementById('financial-tips-container');
-        const contentDiv = document.getElementById('financial-tips-content');
-        const spinner = container.querySelector('.spinner-container');
-        
-        container.classList.remove('hidden');
-        contentDiv.innerHTML = '';
-        spinner.classList.remove('hidden');
-
-        const prompt = `Como asesor financiero, dame 5 consejos cortos y prácticos para una persona en República Dominicana con una deuda pendiente de ${balance.toLocaleString('es-DO')} DOP. Los consejos deben ser accionables y fáciles de entender. Formatea la respuesta como una lista HTML (ul y li).`;
-
-        try {
-            const responseText = await callGemini(prompt);
-            contentDiv.innerHTML = `<h4>Consejos para ti:</h4>${responseText}`;
-        } catch (error) {
-            contentDiv.innerHTML = `<p class="error-text">No se pudieron generar los consejos. Inténtalo de nuevo.</p>`;
-            console.error("Error fetching financial tips:", error);
-        } finally {
-            spinner.classList.add('hidden');
-        }
-    }
-
-    async function handleSuggestPaymentPlan(event) {
-        const username = event.target.dataset.username;
-        const user = users[username];
-        const totalPayments = user.account.paymentHistory.reduce((sum, p) => sum + p.amount, 0);
-        const balance = user.account.totalDebt - totalPayments;
-
-        const container = document.getElementById('payment-plan-container');
-        const contentDiv = document.getElementById('payment-plan-content');
-        const spinner = container.querySelector('.spinner-container');
-
-        container.classList.remove('hidden');
-        contentDiv.innerHTML = '';
-        spinner.classList.remove('hidden');
-
-        const prompt = `Basado en una deuda pendiente de ${balance} DOP, genera 3 planes de pago distintos.`;
-        const schema = {
-            type: "ARRAY",
-            items: {
-                type: "OBJECT",
-                properties: {
-                    planName: { type: "STRING" },
-                    installments: { type: "NUMBER" },
-                    installmentAmount: { type: "NUMBER" },
-                    frequency: { type: "STRING" }
-                },
-                required: ["planName", "installments", "installmentAmount", "frequency"]
-            }
-        };
-        
-        try {
-            const plans = await callGemini(prompt, schema);
-            let html = '<h4>Planes Sugeridos:</h4>';
-            plans.forEach(plan => {
-                html += `
-                    <div class="payment-plan-card">
-                        <h5>${plan.planName}</h5>
-                        <p><strong>Cuotas:</strong> ${plan.installments} ${plan.frequency}s</p>
-                        <p><strong>Monto por cuota:</strong> RD$ ${plan.installmentAmount.toLocaleString('es-DO')}</p>
-                    </div>
-                `;
-            });
-            contentDiv.innerHTML = html;
-        } catch (error) {
-            contentDiv.innerHTML = `<p class="error-text">No se pudieron generar los planes. Inténtalo de nuevo.</p>`;
-            console.error("Error fetching payment plans:", error);
-        } finally {
-            spinner.classList.add('hidden');
-        }
-    }
-
     // --- LÓGICA DE VISTAS Y MODALES ---
 
     function showClientDashboard(userData, username) {
@@ -180,9 +95,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('current-balance').textContent = balance.toLocaleString('es-DO');
         
         renderPaymentHistory(userData.account.paymentHistory);
-        
-        getFinancialTipsButton.dataset.username = username;
-        document.getElementById('financial-tips-container').classList.add('hidden');
     }
 
     function renderPaymentHistory(history) {
@@ -266,51 +178,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('modal-client-name').textContent = `Gestionar a: ${user.profile.fullName}`;
         manageClientForm.dataset.username = username;
-        suggestPaymentPlanButton.dataset.username = username;
         manageClientModal.classList.remove('hidden');
-        document.getElementById('payment-plan-container').classList.add('hidden');
     }
 
     function closeManagementModal() {
         manageClientModal.classList.add('hidden');
         manageClientForm.reset();
-    }
-
-    // --- FUNCIÓN DE LLAMADA A LA API DE GEMINI ---
-
-    async function callGemini(prompt, jsonSchema = null) {
-        const apiKey = ""; // Se deja en blanco según las instrucciones
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-        
-        let payload = {
-            contents: [{ role: "user", parts: [{ text: prompt }] }]
-        };
-
-        if (jsonSchema) {
-            payload.generationConfig = {
-                responseMimeType: "application/json",
-                responseSchema: jsonSchema
-            };
-        }
-
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            throw new Error(`API call failed with status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        
-        if (result.candidates && result.candidates.length > 0) {
-            const text = result.candidates[0].content.parts[0].text;
-            return jsonSchema ? JSON.parse(text) : text;
-        } else {
-            throw new Error("No content received from API.");
-        }
     }
 });
 
