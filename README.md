@@ -47,7 +47,7 @@ Todos los cambios se guardan y reflejan instantáneamente en el sistema.
 
 <h2> 3. Aspectos Técnicos </h2>
 
-Tecnologías Frontend: La aplicación está construida utilizando tecnologías web estándar:
+<h3> Tecnologías Frontend: La aplicación está construida utilizando tecnologías web estándar: </h3>
 
 HTML5: Para la estructura y el contenido de las páginas.
 
@@ -55,18 +55,7 @@ CSS3: Para el diseño, la paleta de colores (rojo, negro, blanco) y la aparienci
 
 JavaScript (Vanilla JS): Para toda la lógica de la aplicación, incluyendo la validación de formularios, la manipulación del DOM (mostrar/ocultar vistas), el manejo de eventos y la lógica de negocio.
 
-Manejo de Datos:
+<h3> Manejo de Datos: </h3>
 
 Actualmente, y para fines de demostración, toda la información de los usuarios y sus cuentas se almacena en un objeto de JavaScript directamente en el código. Esto simula una base de datos y permite que la aplicación sea completamente funcional en un entorno local sin necesidad de un servidor.
 
-<h2> 4. Próximos Pasos y Mejoras Futuras </h2>
-
-La base actual del proyecto es sólida y permite varias expansiones, como:
-
-Integración con una Base de Datos Real: Conectar la aplicación a un servicio como Firebase (Firestore) para que los datos sean persistentes, seguros y se puedan acceder desde cualquier lugar.
-
-Creación de Usuarios: Añadir una función para que el administrador pueda crear, editar o eliminar perfiles de clientes directamente desde su panel.
-
-Historial de Transacciones: Guardar un registro de cada pago o modificación de deuda con su fecha, para que tanto el cliente como el administrador puedan ver un historial detallado.
-
-Conexión a APIs Externas: Implementar llamadas a APIs reales para obtener y mostrar la tasa del dólar y la información del clima en tiempo real.
