@@ -4,6 +4,7 @@
     --primary-dark: #a00;
     --secondary-color: #6c757d;
     --success-color: #28a745;
+    --danger-color: #dc3545;
     --background-light: #f0f2f5;
     --text-dark: #333;
     --text-light: #555;
@@ -170,6 +171,54 @@ body {
 .button-manage:hover { background-color: #0056b3; }
 .button-new-client { padding: 10px 15px; background-color: var(--success-color); color: var(--white); border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s; font-weight: 500; }
 .button-new-client:hover { background-color: #218838; }
+
+.status-late {
+    background-color: var(--danger-color);
+    color: var(--white);
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-left: 8px;
+}
+
+.late-warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.late-fee-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.button-danger {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--danger-color);
+    color: var(--white);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 700;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+}
+
+.button-danger:hover {
+    background-color: #c82333;
+}
+
+.transaction-late-fee td {
+    color: var(--danger-color);
+    font-weight: 500;
+}
 
 
 /* --- Estilos del Modal --- */
