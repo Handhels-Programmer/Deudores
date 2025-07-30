@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <!-- Referencia al archivo de estilos CSS -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="estiloh.css">
 </head>
 <body>
 
@@ -28,6 +28,7 @@
                         <label for="role">Tipo de Usuario</label>
                         <select id="role" name="role">
                             <option value="cliente">Cliente</option>
+                            <option value="cobrador">Cobrador</option>
                             <option value="administrador">Administrador</option>
                         </select>
                     </div>
@@ -104,17 +105,36 @@
         </div>
         <div class="dashboard-content">
             <div class="card">
-                <h3>Gestión de Clientes</h3>
+                <h3>Pagos Pendientes de Aprobación</h3>
+                <div id="pending-payments-container"></div>
+            </div>
+            <div class="card">
+                <h3>Gestión de Usuarios</h3>
                 <div class="admin-actions">
-                    <p>Gestiona clientes existentes o añade uno nuevo.</p>
-                    <button id="create-client-button" class="button-new-client">Crear Nuevo Cliente</button>
+                    <p>Gestiona clientes existentes o añade un nuevo usuario.</p>
+                    <button id="create-user-button" class="button-new-client">Crear Nuevo Usuario</button>
                 </div>
                 <div id="client-list-container"></div>
             </div>
         </div>
     </section>
+    
+    <!-- Vista del Dashboard del Cobrador (inicialmente oculta) -->
+    <section id="collector-dashboard" class="dashboard hidden">
+        <div class="dashboard-header">
+            <h1 id="collector-welcome"></h1>
+            <button class="logout-button">Cerrar Sesión</button>
+        </div>
+        <div class="dashboard-content">
+            <div class="card">
+                <h3>Registrar Pagos de Clientes</h3>
+                <p>Seleccione un cliente para registrar un pago.</p>
+                <div id="collector-client-list-container"></div>
+            </div>
+        </div>
+    </section>
 
-    <!-- Modal para gestionar cliente (inicialmente oculto) -->
+    <!-- Modal para gestionar cliente (Admin) -->
     <div id="manage-client-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="modal-header">
@@ -124,7 +144,7 @@
             <div class="modal-body">
                 <form id="manage-client-form">
                     <div class="input-group">
-                        <label for="new-payment">Registrar Nuevo Pago (RD$)</label>
+                        <label for="new-payment">Registrar Nuevo Pago (Aprobado)</label>
                         <input type="number" id="new-payment" placeholder="0.00" min="0">
                     </div>
                     <hr>
@@ -144,15 +164,42 @@
         </div>
     </div>
 
-    <!-- Modal para crear cliente (inicialmente oculto) -->
-    <div id="create-client-modal" class="modal-overlay hidden">
+    <!-- Modal para registrar pago (Cobrador) -->
+    <div id="register-payment-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Crear Nuevo Cliente</h2>
+                <h2 id="register-payment-client-name"></h2>
                 <button class="close-modal-button">&times;</button>
             </div>
             <div class="modal-body">
-                <form id="create-client-form">
+                <form id="register-payment-form">
+                    <div class="input-group">
+                        <label for="collector-payment-amount">Monto del Pago (RD$)</label>
+                        <input type="number" id="collector-payment-amount" placeholder="0.00" min="1" required>
+                    </div>
+                    <button type="submit" class="button-primary">Registrar Pago</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para crear usuario (Admin) -->
+    <div id="create-user-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Crear Nuevo Usuario</h2>
+                <button class="close-modal-button">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="create-user-form">
+                    <div class="input-group">
+                        <label for="new-user-role">Tipo de Usuario</label>
+                        <select id="new-user-role" required>
+                            <option value="cliente">Cliente</option>
+                            <option value="cobrador">Cobrador</option>
+                        </select>
+                    </div>
+                    <hr>
                     <h4>Datos Personales y Credenciales</h4>
                     <div class="input-group">
                         <label for="new-fullname">Nombre Completo</label>
@@ -166,38 +213,40 @@
                         <label for="new-password">Contraseña</label>
                         <input type="password" id="new-password" required>
                     </div>
-                    <div class="input-group">
-                        <label for="new-address">Dirección</label>
-                        <input type="text" id="new-address">
-                    </div>
-                    <div class="input-group">
-                        <label for="new-contact">Contacto</label>
-                        <input type="text" id="new-contact">
-                    </div>
-                    <div class="input-group">
-                        <label for="new-idnumber">Cédula</label>
-                        <input type="text" id="new-idnumber">
-                    </div>
-                    <hr>
-                    <h4>Condiciones del Préstamo</h4>
-                     <div class="input-group">
-                        <label for="initial-debt">Deuda Inicial (RD$)</label>
-                        <input type="number" id="initial-debt" min="1" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="loan-term">Plazo del Préstamo (meses)</label>
-                        <input type="number" id="loan-term" min="1" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="interest-rate">Tasa de Interés Mensual (%)</label>
-                        <input type="number" id="interest-rate" min="0" step="0.1" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="late-fee-rate">Tasa de Mora Mensual (%)</label>
-                        <input type="number" id="late-fee-rate" min="0" step="0.1" required>
+                    <div id="client-specific-fields">
+                        <div class="input-group">
+                            <label for="new-address">Dirección</label>
+                            <input type="text" id="new-address">
+                        </div>
+                        <div class="input-group">
+                            <label for="new-contact">Contacto</label>
+                            <input type="text" id="new-contact">
+                        </div>
+                        <div class="input-group">
+                            <label for="new-idnumber">Cédula</label>
+                            <input type="text" id="new-idnumber">
+                        </div>
+                        <hr>
+                        <h4>Condiciones del Préstamo</h4>
+                        <div class="input-group">
+                            <label for="initial-debt">Deuda Inicial (RD$)</label>
+                            <input type="number" id="initial-debt" min="1" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="loan-term">Plazo del Préstamo (meses)</label>
+                            <input type="number" id="loan-term" min="1" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="interest-rate">Tasa de Interés Mensual (%)</label>
+                            <input type="number" id="interest-rate" min="0" step="0.1" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="late-fee-rate">Tasa de Mora Mensual (%)</label>
+                            <input type="number" id="late-fee-rate" min="0" step="0.1" required>
+                        </div>
                     </div>
                     <p id="create-error-message" class="error-message"></p>
-                    <button type="submit" class="button-primary">Generar Planes de Pago</button>
+                    <button type="submit" class="button-primary">Siguiente</button>
                 </form>
             </div>
         </div>
@@ -213,9 +262,7 @@
             <div class="modal-body">
                 <p>Elija el plan de pago para el nuevo cliente.</p>
                 <form id="select-plan-form">
-                    <div id="plan-options-container">
-                        <!-- Las opciones se generarán con JS -->
-                    </div>
+                    <div id="plan-options-container"></div>
                     <p id="plan-error-message" class="error-message"></p>
                     <button type="submit" class="button-primary">Confirmar Plan y Crear Cliente</button>
                 </form>
