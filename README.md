@@ -1,13 +1,13 @@
 <h1> Sistema de Gestión de Deudores </h1>
 <h2> 1. Resumen General </h2>
 
-Este proyecto es una aplicación web diseñada para la gestión simple y efectiva de cuentas de deudores. La plataforma permite dos tipos de acceso: un portal para clientes (deudores) donde pueden consultar el estado de sus cuentas, y un panel para administradores con herramientas para gestionar la información financiera de todos los clientes.
+<p>Este proyecto es una aplicación web diseñada para la gestión simple y efectiva de cuentas de deudores. La plataforma permite dos tipos de acceso: un portal para clientes (deudores) donde pueden consultar el estado de sus cuentas, y un panel para administradores con herramientas para gestionar la información financiera de todos los clientes. </p>
 
 El objetivo principal es ofrecer una interfaz clara y funcional que centralice la información de deudas y pagos, facilitando el seguimiento tanto para el deudor como para la entidad administradora.
 
-2. Características Principales
+<h2> 2. Características Principales </h2>
 
-La aplicación se divide en las siguientes funcionalidades clave:
+<h3> La aplicación se divide en las siguientes funcionalidades clave: </h3>
 
 Sistema de Autenticación por Roles:
 
@@ -45,7 +45,7 @@ Actualizar o modificar el monto total de la deuda si es necesario.
 
 Todos los cambios se guardan y reflejan instantáneamente en el sistema.
 
-3. Aspectos Técnicos
+<h2> 3. Aspectos Técnicos </h2>
 
 Tecnologías Frontend: La aplicación está construida utilizando tecnologías web estándar:
 
@@ -59,7 +59,7 @@ Manejo de Datos:
 
 Actualmente, y para fines de demostración, toda la información de los usuarios y sus cuentas se almacena en un objeto de JavaScript directamente en el código. Esto simula una base de datos y permite que la aplicación sea completamente funcional en un entorno local sin necesidad de un servidor.
 
-4. Próximos Pasos y Mejoras Futuras
+<h2> 4. Próximos Pasos y Mejoras Futuras </h2>
 
 La base actual del proyecto es sólida y permite varias expansiones, como:
 
