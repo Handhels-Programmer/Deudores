@@ -6,10 +6,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const clientDashboard = document.getElementById('client-dashboard');
     const adminDashboard = document.getElementById('admin-dashboard');
     const logoutButtons = document.querySelectorAll('.logout-button');
+    const clientListContainer = document.getElementById('client-list-container');
     
     // Referencias al Modal de Gestión
     const manageClientModal = document.getElementById('manage-client-modal');
-    const clientListContainer = document.getElementById('client-list-container');
+    const manageClientForm = document.getElementById('manage-client-form');
 
     // Referencias al Modal de Creación
     const createClientModal = document.getElementById('create-client-modal');
@@ -23,11 +24,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Eventos del Modal de Gestión
     manageClientModal.querySelector('.close-modal-button').addEventListener('click', () => manageClientModal.classList.add('hidden'));
-    manageClientModal.querySelector('#manage-client-form').addEventListener('submit', handleSaveChanges);
+    manageClientForm.addEventListener('submit', handleSaveChanges);
 
     // Eventos del Modal de Creación
     createClientButton.addEventListener('click', () => createClientModal.classList.remove('hidden'));
-    createClientModal.querySelector('.close-modal-button').addEventListener('click', () => createClientModal.classList.add('hidden'));
+    createClientModal.querySelector('.close-modal-button').addEventListener('click', () => {
+        createClientModal.classList.add('hidden');
+        createClientForm.reset();
+        document.getElementById('create-error-message').classList.remove('show');
+    });
     createClientForm.addEventListener('submit', handleCreateClient);
 
 
@@ -87,6 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         manageClientModal.classList.add('hidden');
+        manageClientForm.reset();
         renderClientList();
     }
 
@@ -95,9 +101,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const errorMessage = document.getElementById('create-error-message');
         
         // Recoger datos del formulario
-        const newUsername = document.getElementById('new-username').value.toLowerCase();
+        const newUsername = document.getElementById('new-username').value.toLowerCase().trim();
         const newPassword = document.getElementById('new-password').value;
-        const newFullname = document.getElementById('new-fullname').value;
+        const newFullname = document.getElementById('new-fullname').value.trim();
         const newAddress = document.getElementById('new-address').value;
         const newContact = document.getElementById('new-contact').value;
         const newIdNumber = document.getElementById('new-idnumber').value;
@@ -234,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!user) return;
 
         document.getElementById('modal-client-name').textContent = `Gestionar a: ${user.profile.fullName}`;
-        manageClientModal.querySelector('#manage-client-form').dataset.username = username;
+        manageClientForm.dataset.username = username;
         manageClientModal.classList.remove('hidden');
     }
 });
