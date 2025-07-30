@@ -58,4 +58,3 @@ JavaScript (Vanilla JS): Para toda la lógica de la aplicación, incluyendo la v
 <h3> Manejo de Datos: </h3>
 
 Actualmente, y para fines de demostración, toda la información de los usuarios y sus cuentas se almacena en un objeto de JavaScript directamente en el código. Esto simula una base de datos y permite que la aplicación sea completamente funcional en un entorno local sin necesidad de un servidor.
-
