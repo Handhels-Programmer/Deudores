@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="do">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -96,8 +96,10 @@
         <div class="dashboard-content">
             <div class="card">
                 <h3>Gestión de Clientes</h3>
-                <p>Haz clic en "Gestionar" para registrar un pago o modificar la deuda de un cliente.</p>
-                <!-- La tabla de clientes se generará con JavaScript -->
+                <div class="admin-actions">
+                    <p>Gestiona clientes existentes o añade uno nuevo.</p>
+                    <button id="create-client-button" class="button-new-client">Crear Nuevo Cliente</button>
+                </div>
                 <div id="client-list-container"></div>
             </div>
         </div>
@@ -108,7 +110,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modal-client-name"></h2>
-                <button id="close-modal-button" class="close-button">&times;</button>
+                <button class="close-modal-button">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="manage-client-form">
@@ -128,8 +130,50 @@
         </div>
     </div>
 
+    <!-- Modal para crear cliente (inicialmente oculto) -->
+    <div id="create-client-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Crear Nuevo Cliente</h2>
+                <button class="close-modal-button">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="create-client-form">
+                    <div class="input-group">
+                        <label for="new-fullname">Nombre Completo</label>
+                        <input type="text" id="new-fullname" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="new-username">Nombre de Usuario</label>
+                        <input type="text" id="new-username" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="new-password">Contraseña</label>
+                        <input type="password" id="new-password" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="new-address">Dirección</label>
+                        <input type="text" id="new-address">
+                    </div>
+                    <div class="input-group">
+                        <label for="new-contact">Contacto</label>
+                        <input type="text" id="new-contact">
+                    </div>
+                    <div class="input-group">
+                        <label for="new-idnumber">Cédula</label>
+                        <input type="text" id="new-idnumber">
+                    </div>
+                     <div class="input-group">
+                        <label for="initial-debt">Deuda Inicial (RD$)</label>
+                        <input type="number" id="initial-debt" min="0" value="0" required>
+                    </div>
+                    <p id="create-error-message" class="error-message"></p>
+                    <button type="submit" class="button-primary">Crear Cliente</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
-    <!-- Referencia al archivo JavaScript -->
     <script src="script.js"></script>
 </body>
 </html>
