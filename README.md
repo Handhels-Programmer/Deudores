@@ -1,4 +1,4 @@
-Descripción del Proyecto: Sistema de Gestión de Deudores
+<h1> Descripción del Proyecto: Sistema de Gestión de Deudores </h1>
 1. Resumen General
 
 Este proyecto es una aplicación web diseñada para la gestión simple y efectiva de cuentas de deudores. La plataforma permite dos tipos de acceso: un portal para clientes (deudores) donde pueden consultar el estado de sus cuentas, y un panel para administradores con herramientas para gestionar la información financiera de todos los clientes.
