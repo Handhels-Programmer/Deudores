@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Referencias al Modal de Gestión
     const manageClientModal = document.getElementById('manage-client-modal');
     const manageClientForm = document.getElementById('manage-client-form');
+    const applyLateFeeButton = document.getElementById('apply-late-fee-button');
 
     // Referencias al Modal de Creación
     const createClientModal = document.getElementById('create-client-modal');
@@ -32,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Eventos del Modal de Gestión
     manageClientModal.querySelector('.close-modal-button').addEventListener('click', () => manageClientModal.classList.add('hidden'));
     manageClientForm.addEventListener('submit', handleSaveChanges);
+    applyLateFeeButton.addEventListener('click', handleApplyLateFee);
 
     // Eventos del Modal de Creación
     createClientButton.addEventListener('click', () => createClientModal.classList.remove('hidden'));
@@ -95,8 +97,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (newPayment > 0) {
             user.account.paymentHistory.push({
                 amount: newPayment,
-                date: new Date().toISOString()
+                date: new Date().toISOString(),
+                type: 'payment'
             });
+            // Lógica para avanzar la fecha de pago si se cumple la cuota
+            const planAmount = user.account.paymentPlan.amount;
+            if (planAmount && newPayment >= planAmount) {
+                user.account.nextDueDate = getNextDueDate(user.account.nextDueDate, user.account.paymentPlan.frequency).toISOString();
+            }
         }
         if (!isNaN(newDebt) && newDebt >= 0) {
             user.account.totalDebt = newDebt;
@@ -104,6 +112,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
         manageClientModal.classList.add('hidden');
         manageClientForm.reset();
+        renderClientList();
+    }
+    
+    function handleApplyLateFee(event) {
+        const username = event.target.dataset.username;
+        const user = users[username];
+        const totalPayments = user.account.paymentHistory.filter(p => p.type === 'payment').reduce((sum, p) => sum + p.amount, 0);
+        const balance = user.account.totalDebt - totalPayments;
+        
+        const lateFee = balance * (user.account.lateFeeRate / 100);
+        
+        // Se añade el cargo por mora a la deuda total.
+        user.account.totalDebt += lateFee;
+        
+        // Se registra la transacción de mora
+        user.account.paymentHistory.push({
+            amount: lateFee,
+            date: new Date().toISOString(),
+            type: 'late_fee'
+        });
+        
+        // Se avanza la fecha de vencimiento al siguiente ciclo
+        user.account.nextDueDate = getNextDueDate(user.account.nextDueDate, user.account.paymentPlan.frequency).toISOString();
+        
+        manageClientModal.classList.add('hidden');
         renderClientList();
     }
 
@@ -131,7 +164,9 @@ document.addEventListener('DOMContentLoaded', () => {
             account: {
                 totalDebt: parseFloat(document.getElementById('initial-debt').value),
                 paymentHistory: [],
-                paymentPlan: {}
+                paymentPlan: {},
+                lateFeeRate: parseFloat(document.getElementById('late-fee-rate').value),
+                nextDueDate: null
             }
         };
 
@@ -159,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const planData = JSON.parse(selectedPlanInput.value);
         tempNewClientData.account.paymentPlan = planData;
+        tempNewClientData.account.nextDueDate = getNextDueDate(new Date(), planData.frequency).toISOString();
         
         users[tempNewClientData.username] = tempNewClientData;
 
@@ -176,26 +212,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const monthlyInterestRate = monthlyInterest / 100;
 
-        // Plan 1: Mensual
         const monthlyPayment = monthlyInterestRate > 0 ?
             principal * [monthlyInterestRate * Math.pow(1 + monthlyInterestRate, termInMonths)] / [Math.pow(1 + monthlyInterestRate, termInMonths) - 1] :
             principal / termInMonths;
         const totalMonthly = monthlyPayment * termInMonths;
         
-        // Plan 2: Quincenal (Acelerado)
-        const biweeklyPayments = termInMonths * 2;
         const biweeklyPayment = monthlyPayment / 2;
-        const totalBiweekly = biweeklyPayment * biweeklyPayments;
-
-        // Plan 3: Semanal (Acelerado)
-        const weeklyPayments = termInMonths * 4;
         const weeklyPayment = monthlyPayment / 4;
-        const totalWeekly = weeklyPayment * weeklyPayments;
 
         const plans = [
             { name: 'Plan Mensual', frequency: 'Mensual', amount: monthlyPayment, total: totalMonthly, installments: termInMonths },
-            { name: 'Plan Quincenal', frequency: 'Quincenal', amount: biweeklyPayment, total: totalBiweekly, installments: biweeklyPayments },
-            { name: 'Plan Semanal', frequency: 'Semanal', amount: weeklyPayment, total: totalWeekly, installments: weeklyPayments }
+            { name: 'Plan Quincenal', frequency: 'Quincenal', amount: biweeklyPayment, total: biweeklyPayment * termInMonths * 2, installments: termInMonths * 2 },
+            { name: 'Plan Semanal', frequency: 'Semanal', amount: weeklyPayment, total: weeklyPayment * termInMonths * 4, installments: termInMonths * 4 }
         ];
 
         plans.forEach((plan, index) => {
@@ -216,24 +244,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showClientDashboard(userData) {
         clientDashboard.classList.remove('hidden');
-        const totalPayments = userData.account.paymentHistory.reduce((sum, p) => sum + p.amount, 0);
+        const totalPayments = userData.account.paymentHistory.filter(p => p.type === 'payment').reduce((sum, p) => sum + p.amount, 0);
         const balance = userData.account.totalDebt - totalPayments;
 
         document.getElementById('client-welcome').textContent = `Bienvenido, ${userData.profile.fullName}`;
         document.getElementById('client-address').textContent = userData.profile.address;
         document.getElementById('client-contact').textContent = userData.profile.contact;
         document.getElementById('client-id').textContent = userData.profile.idNumber;
-        document.getElementById('total-debt').textContent = userData.account.totalDebt.toLocaleString('es-DO');
-        document.getElementById('payments-made').textContent = totalPayments.toLocaleString('es-DO');
-        document.getElementById('current-balance').textContent = balance.toLocaleString('es-DO');
+        document.getElementById('total-debt').textContent = userData.account.totalDebt.toLocaleString('es-DO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('payments-made').textContent = totalPayments.toLocaleString('es-DO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('current-balance').textContent = balance.toLocaleString('es-DO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         
         renderPaymentHistory(userData.account.paymentHistory);
         
         const planCard = document.getElementById('client-plan-card');
         if (userData.account.paymentPlan && userData.account.paymentPlan.frequency) {
+            const dueDate = new Date(userData.account.nextDueDate);
             document.getElementById('plan-frequency').textContent = userData.account.paymentPlan.frequency;
             document.getElementById('plan-amount').textContent = userData.account.paymentPlan.amount.toFixed(2);
+            document.getElementById('plan-due-date').textContent = dueDate.toLocaleDateString('es-DO');
             planCard.classList.remove('hidden');
+
+            if (isLate(dueDate)) {
+                document.getElementById('late-fee-warning').classList.remove('hidden');
+            } else {
+                document.getElementById('late-fee-warning').classList.add('hidden');
+            }
+
         } else {
             planCard.classList.add('hidden');
         }
@@ -242,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderPaymentHistory(history) {
         const container = document.getElementById('payment-history-container');
         if (history.length === 0) {
-            container.innerHTML = '<p>No se han registrado pagos.</p>';
+            container.innerHTML = '<p>No se han registrado transacciones.</p>';
             return;
         }
 
@@ -252,18 +289,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 <thead>
                     <tr>
                         <th>Fecha</th>
-                        <th>Monto Pagado</th>
+                        <th>Descripción</th>
+                        <th>Monto</th>
                     </tr>
                 </thead>
                 <tbody>`;
 
-        sortedHistory.forEach(payment => {
-            const paymentDate = new Date(payment.date);
-            const formattedDate = paymentDate.toLocaleDateString('es-DO', { year: 'numeric', month: 'long', day: 'numeric' });
+        sortedHistory.forEach(transaction => {
+            const transactionDate = new Date(transaction.date);
+            const formattedDate = transactionDate.toLocaleDateString('es-DO', { year: 'numeric', month: 'long', day: 'numeric' });
+            const isFee = transaction.type === 'late_fee';
+            const description = isFee ? 'Cargo por Mora' : 'Pago Realizado';
+            const rowClass = isFee ? 'transaction-late-fee' : '';
+            
             tableHTML += `
-                <tr>
+                <tr class="${rowClass}">
                     <td>${formattedDate}</td>
-                    <td>RD$ ${payment.amount.toLocaleString('es-DO')}</td>
+                    <td>${description}</td>
+                    <td>RD$ ${transaction.amount.toLocaleString('es-DO', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                 </tr>`;
         });
 
@@ -292,14 +335,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 <tbody>`;
 
         clientUsers.forEach(([username, client]) => {
-            const totalPayments = client.account.paymentHistory.reduce((sum, p) => sum + p.amount, 0);
+            const totalPayments = client.account.paymentHistory.filter(p => p.type === 'payment').reduce((sum, p) => sum + p.amount, 0);
             const balance = client.account.totalDebt - totalPayments;
+            const lateStatus = isLate(new Date(client.account.nextDueDate)) ? '<span class="status-late">Atrasado</span>' : '';
+
             tableHTML += `
                 <tr>
-                    <td>${client.profile.fullName}</td>
-                    <td>RD$ ${client.account.totalDebt.toLocaleString('es-DO')}</td>
-                    <td>RD$ ${totalPayments.toLocaleString('es-DO')}</td>
-                    <td>RD$ ${balance.toLocaleString('es-DO')}</td>
+                    <td>${client.profile.fullName} ${lateStatus}</td>
+                    <td>RD$ ${client.account.totalDebt.toLocaleString('es-DO', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td>RD$ ${totalPayments.toLocaleString('es-DO', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td>RD$ ${balance.toLocaleString('es-DO', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                     <td>
                         <button class="button-manage" data-username="${username}">Gestionar</button>
                     </td>
@@ -316,7 +361,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('modal-client-name').textContent = `Gestionar a: ${user.profile.fullName}`;
         manageClientForm.dataset.username = username;
+        
+        const lateFeeSection = document.getElementById('late-fee-section');
+        if (isLate(new Date(user.account.nextDueDate))) {
+            lateFeeSection.classList.remove('hidden');
+            applyLateFeeButton.dataset.username = username;
+        } else {
+            lateFeeSection.classList.add('hidden');
+        }
+
         manageClientModal.classList.remove('hidden');
+    }
+
+    // --- FUNCIONES DE UTILIDAD ---
+    
+    function isLate(dueDate) {
+        if (!dueDate) return false;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Normalizar a medianoche para comparar solo fechas
+        return dueDate < today;
+    }
+
+    function getNextDueDate(currentDate, frequency) {
+        const date = new Date(currentDate);
+        switch (frequency) {
+            case 'Mensual':
+                date.setMonth(date.getMonth() + 1);
+                break;
+            case 'Quincenal':
+                date.setDate(date.getDate() + 15);
+                break;
+            case 'Semanal':
+                date.setDate(date.getDate() + 7);
+                break;
+        }
+        return date;
     }
 });
 
@@ -330,10 +409,12 @@ const users = {
         account: { 
             totalDebt: 50000, 
             paymentHistory: [
-                { amount: 5000, date: '2025-06-15T14:00:00Z' },
-                { amount: 10000, date: '2025-07-16T15:30:00Z' }
+                { amount: 5000, date: '2025-06-15T14:00:00Z', type: 'payment' },
+                { amount: 10000, date: '2025-07-16T15:30:00Z', type: 'payment' }
             ],
-            paymentPlan: { frequency: 'Mensual', amount: 5500 }
+            paymentPlan: { frequency: 'Mensual', amount: 5500 },
+            lateFeeRate: 5, // 5%
+            nextDueDate: '2025-08-16T15:30:00Z'
         }
     },
     'mariagomez': {
@@ -343,11 +424,12 @@ const users = {
         account: { 
             totalDebt: 125000, 
             paymentHistory: [
-                { amount: 25000, date: '2025-05-20T10:00:00Z' },
-                { amount: 25000, date: '2025-06-20T11:00:00Z' },
-                { amount: 25000, date: '2025-07-21T12:00:00Z' }
+                { amount: 25000, date: '2025-05-20T10:00:00Z', type: 'payment' },
+                { amount: 25000, date: '2025-06-20T11:00:00Z', type: 'payment' }
             ],
-            paymentPlan: { frequency: 'Quincenal', amount: 12500 }
+            paymentPlan: { frequency: 'Mensual', amount: 12500 },
+            lateFeeRate: 4.5, // 4.5%
+            nextDueDate: '2025-07-20T11:00:00Z' // Esta fecha está en el pasado, por lo que estará atrasada
         }
     },
     'carlosrodriguez': {
@@ -357,7 +439,9 @@ const users = {
         account: { 
             totalDebt: 2500, 
             paymentHistory: [],
-            paymentPlan: {}
+            paymentPlan: {},
+            lateFeeRate: 6,
+            nextDueDate: null
         }
     },
     'admin': {
