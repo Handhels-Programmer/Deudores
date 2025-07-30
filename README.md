@@ -9,33 +9,33 @@ El objetivo principal es ofrecer una interfaz clara y funcional que centralice l
 
 <h3> La aplicación se divide en las siguientes funcionalidades clave: </h3>
 
-Sistema de Autenticación por Roles:
+<h4> Sistema de Autenticación por Roles: </h4> 
 
 Un portal de inicio de sesión seguro que diferencia entre usuarios de tipo Cliente y Administrador.
 
 La validación se realiza verificando el nombre de usuario, la contraseña y el rol seleccionado, mostrando un mensaje de error en caso de que los datos sean incorrectos.
 
-Panel de Cliente:
+<h4> Panel de Cliente: </h4> 
 
 Una vez que un cliente inicia sesión, accede a un panel personal y privado.
 
-En este panel puede visualizar de forma clara:
+<h4> En este panel puede visualizar de forma clara: </h4> 
 
 Información de Perfil: Sus datos personales como dirección, número de contacto y cédula de identidad.
 
 Estado de Cuenta Detallado: Un resumen financiero que incluye el monto total de la deuda, la suma de todos los pagos realizados hasta la fecha y el balance pendiente actual.
 
-Panel de Administrador:
+<h4> Panel de Administrador: </h4> 
 
 El administrador tiene acceso a una vista de gestión centralizada que le permite supervisar a todos los clientes.
 
-El panel incluye:
+<h4> El panel incluye: </h4> 
 
 Una tabla con la lista completa de clientes, mostrando un resumen del estado financiero de cada uno (deuda total, pagos, balance).
 
 La capacidad de realizar acciones de gestión sobre cada cliente.
 
-Gestión de Cuentas (Funcionalidad del Administrador):
+<h4> Gestión de Cuentas (Funcionalidad del Administrador): </h4> 
 
 Al hacer clic en el botón "Gestionar" de un cliente, se abre una ventana emergente (modal) que permite al administrador:
 
