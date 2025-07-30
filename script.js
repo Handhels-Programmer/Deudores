@@ -9,16 +9,27 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Referencias al Modal de Gestión
     const manageClientModal = document.getElementById('manage-client-modal');
-    const closeModalButton = document.getElementById('close-modal-button');
-    const manageClientForm = document.getElementById('manage-client-form');
     const clientListContainer = document.getElementById('client-list-container');
 
+    // Referencias al Modal de Creación
+    const createClientModal = document.getElementById('create-client-modal');
+    const createClientButton = document.getElementById('create-client-button');
+    const createClientForm = document.getElementById('create-client-form');
+    
     // Asignación de eventos
     loginForm.addEventListener('submit', handleLogin);
     logoutButtons.forEach(button => button.addEventListener('click', handleLogout));
-    closeModalButton.addEventListener('click', closeManagementModal);
-    manageClientForm.addEventListener('submit', handleSaveChanges);
     clientListContainer.addEventListener('click', handleClientListClick);
+
+    // Eventos del Modal de Gestión
+    manageClientModal.querySelector('.close-modal-button').addEventListener('click', () => manageClientModal.classList.add('hidden'));
+    manageClientModal.querySelector('#manage-client-form').addEventListener('submit', handleSaveChanges);
+
+    // Eventos del Modal de Creación
+    createClientButton.addEventListener('click', () => createClientModal.classList.remove('hidden'));
+    createClientModal.querySelector('.close-modal-button').addEventListener('click', () => createClientModal.classList.add('hidden'));
+    createClientForm.addEventListener('submit', handleCreateClient);
+
 
     // --- MANEJADORES DE EVENTOS ---
 
@@ -34,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
             errorMessage.classList.remove('show');
             mainContainer.classList.add('hidden');
             if (role === 'cliente') {
-                showClientDashboard(user, username);
+                showClientDashboard(user);
             } else if (role === 'administrador') {
                 showAdminDashboard();
             }
@@ -75,13 +86,63 @@ document.addEventListener('DOMContentLoaded', () => {
             user.account.totalDebt = newDebt;
         }
 
-        closeManagementModal();
+        manageClientModal.classList.add('hidden');
+        renderClientList();
+    }
+
+    function handleCreateClient(event) {
+        event.preventDefault();
+        const errorMessage = document.getElementById('create-error-message');
+        
+        // Recoger datos del formulario
+        const newUsername = document.getElementById('new-username').value.toLowerCase();
+        const newPassword = document.getElementById('new-password').value;
+        const newFullname = document.getElementById('new-fullname').value;
+        const newAddress = document.getElementById('new-address').value;
+        const newContact = document.getElementById('new-contact').value;
+        const newIdNumber = document.getElementById('new-idnumber').value;
+        const initialDebt = parseFloat(document.getElementById('initial-debt').value) || 0;
+
+        // Validación
+        if (!newUsername || !newPassword || !newFullname) {
+            errorMessage.textContent = 'Nombre, usuario y contraseña son obligatorios.';
+            errorMessage.classList.add('show');
+            return;
+        }
+        if (users[newUsername]) {
+            errorMessage.textContent = 'El nombre de usuario ya existe.';
+            errorMessage.classList.add('show');
+            return;
+        }
+
+        // Crear nuevo usuario
+        users[newUsername] = {
+            password: newPassword,
+            role: 'cliente',
+            profile: {
+                fullName: newFullname,
+                address: newAddress,
+                contact: newContact,
+                idNumber: newIdNumber
+            },
+            account: {
+                totalDebt: initialDebt,
+                paymentHistory: []
+            }
+        };
+
+        // Limpiar y cerrar modal
+        errorMessage.classList.remove('show');
+        createClientForm.reset();
+        createClientModal.classList.add('hidden');
+        
+        // Actualizar la lista de clientes en el dashboard del admin
         renderClientList();
     }
 
     // --- LÓGICA DE VISTAS Y MODALES ---
 
-    function showClientDashboard(userData, username) {
+    function showClientDashboard(userData) {
         clientDashboard.classList.remove('hidden');
         const totalPayments = userData.account.paymentHistory.reduce((sum, p) => sum + p.amount, 0);
         const balance = userData.account.totalDebt - totalPayments;
@@ -104,9 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Ordenar historial por fecha, de más reciente a más antiguo
         const sortedHistory = [...history].sort((a, b) => new Date(b.date) - new Date(a.date));
-
         let tableHTML = `
             <table>
                 <thead>
@@ -119,9 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         sortedHistory.forEach(payment => {
             const paymentDate = new Date(payment.date);
-            const formattedDate = paymentDate.toLocaleDateString('es-DO', {
-                year: 'numeric', month: 'long', day: 'numeric'
-            });
+            const formattedDate = paymentDate.toLocaleDateString('es-DO', { year: 'numeric', month: 'long', day: 'numeric' });
             tableHTML += `
                 <tr>
                     <td>${formattedDate}</td>
@@ -177,13 +234,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!user) return;
 
         document.getElementById('modal-client-name').textContent = `Gestionar a: ${user.profile.fullName}`;
-        manageClientForm.dataset.username = username;
+        manageClientModal.querySelector('#manage-client-form').dataset.username = username;
         manageClientModal.classList.remove('hidden');
-    }
-
-    function closeManagementModal() {
-        manageClientModal.classList.add('hidden');
-        manageClientForm.reset();
     }
 });
 
