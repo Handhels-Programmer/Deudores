@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="do">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +13,6 @@
 </head>
 <body>
 
-    <br>
     <!-- Contenedor Principal que se mostrará al cargar -->
     <main id="main-container">
         <div class="login-container">
@@ -71,16 +70,6 @@
                     <p><strong>Monto Total Adeudado:</strong> RD$ <span id="total-debt"></span></p>
                     <p><strong>Total de Pagos Realizados:</strong> RD$ <span id="payments-made"></span></p>
                     <p class="balance"><strong>Balance Pendiente:</strong> RD$ <span id="current-balance"></span></p>
-                    <div class="gemini-feature">
-                        <button id="get-financial-tips-button" class="gemini-button">✨ Recibir Consejos Financieros</button>
-                        <div id="financial-tips-container" class="gemini-response-container hidden">
-                            <div class="spinner-container">
-                                <div class="spinner"></div>
-                                <p>Generando consejos...</p>
-                            </div>
-                            <div id="financial-tips-content" class="gemini-content"></div>
-                        </div>
-                    </div>
                 </div>
                 <div class="card">
                     <h3>Historial de Pagos</h3>
@@ -135,16 +124,6 @@
                     <p class="modal-info">Deja un campo en blanco si no deseas modificarlo.</p>
                     <button type="submit" class="button-primary">Guardar Cambios</button>
                 </form>
-                <div class="gemini-feature-modal">
-                    <button id="suggest-payment-plan-button" class="gemini-button">✨ Sugerir Plan de Pago</button>
-                    <div id="payment-plan-container" class="gemini-response-container hidden">
-                         <div class="spinner-container">
-                            <div class="spinner"></div>
-                            <p>Generando planes...</p>
-                        </div>
-                        <div id="payment-plan-content" class="gemini-content"></div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
