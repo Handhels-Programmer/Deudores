@@ -27,6 +27,8 @@
                         <label for="role">Tipo de Usuario</label>
                         <select id="role" name="role">
                             <option value="cliente">Cliente</option>
+                            <!-- NUEVO: Rol de Cobrador añadido -->
+                            <option value="cobrador">Cobrador</option>
                             <option value="administrador">Administrador</option>
                         </select>
                     </div>
@@ -69,11 +71,11 @@
                         <p><strong>¡Atención!</strong> Su pago está atrasado.</p>
                     </div>
                     <p><strong>Monto Total Adeudado:</strong> RD$ <span id="total-debt"></span></p>
-                    <p><strong>Total de Pagos Realizados:</strong> RD$ <span id="payments-made"></span></p>
+                    <p><strong>Total de Pagos (Aprobados):</strong> RD$ <span id="payments-made"></span></p>
                     <p class="balance"><strong>Balance Pendiente:</strong> RD$ <span id="current-balance"></span></p>
                 </div>
                 <div class="card">
-                    <h3>Historial de Transacciones</h3>
+                    <h3>Historial de Transacciones (Pagos Aprobados)</h3>
                     <div id="payment-history-container"></div>
                 </div>
             </div>
@@ -101,26 +103,20 @@
             <button class="logout-button">Cerrar Sesión</button>
         </div>
         <div class="summary-cards">
-            <div class="summary-card">
-                <h4>Clientes Totales</h4>
-                <p id="total-clients">0</p>
-            </div>
-            <div class="summary-card">
-                <h4>Deuda Total Pendiente</h4>
-                <p id="total-outstanding-debt">RD$ 0.00</p>
-            </div>
-            <div class="summary-card">
-                <h4>Total Recaudado</h4>
-                <p id="total-collected">RD$ 0.00</p>
-            </div>
+            <div class="summary-card"><h4>Clientes Totales</h4><p id="total-clients">0</p></div>
+            <div class="summary-card"><h4>Deuda Total Pendiente</h4><p id="total-outstanding-debt">RD$ 0.00</p></div>
+            <div class="summary-card"><h4>Total Recaudado (Aprobado)</h4><p id="total-collected">RD$ 0.00</p></div>
         </div>
         <div class="dashboard-content">
+             <!-- NUEVO: Contenedor para Pagos Pendientes -->
+            <div id="pending-payments-section" class="card hidden">
+                <h3>Pagos Pendientes de Aprobación</h3>
+                <div id="pending-payments-list"></div>
+            </div>
             <div class="card">
                 <h3>Gestión de Clientes</h3>
                 <div class="admin-actions">
-                    <div class="search-container">
-                        <input type="text" id="client-search-input" placeholder="Buscar cliente por nombre...">
-                    </div>
+                    <div class="search-container"><input type="text" id="client-search-input" placeholder="Buscar cliente por nombre..."></div>
                     <button id="create-client-button" class="button-new-client">Crear Nuevo Cliente</button>
                 </div>
                 <div id="client-list-container"></div>
@@ -128,32 +124,58 @@
         </div>
     </section>
 
+    <!-- NUEVO: Dashboard del Cobrador -->
+    <section id="collector-dashboard" class="dashboard hidden">
+        <div class="dashboard-header">
+            <h1 id="collector-welcome"></h1>
+            <button class="logout-button">Cerrar Sesión</button>
+        </div>
+        <div class="dashboard-content">
+            <div class="card">
+                <h3>Registrar Pagos de Clientes</h3>
+                <div class="admin-actions">
+                    <div class="search-container">
+                        <input type="text" id="collector-client-search" placeholder="Buscar cliente por nombre...">
+                    </div>
+                </div>
+                <div id="collector-client-list"></div>
+            </div>
+        </div>
+    </section>
+
     <!-- Modal para gestionar cliente (Admin) -->
     <div id="manage-client-modal" class="modal-overlay hidden">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modal-client-name"></h2>
-                <button class="close-modal-button">&times;</button>
-            </div>
+            <div class="modal-header"><h2 id="modal-client-name"></h2><button class="close-modal-button">&times;</button></div>
             <div class="modal-body">
                 <form id="manage-client-form">
                     <div class="input-group">
-                        <label for="new-payment">Registrar Nuevo Pago (RD$)</label>
+                        <label for="new-payment">Registrar Nuevo Pago (Aprobado Directo)</label>
                         <input type="number" id="new-payment" placeholder="0.00" min="0">
                     </div>
                     <hr>
-                    <div class="input-group">
-                        <label for="update-debt">Actualizar Deuda Total (RD$)</label>
-                        <input type="number" id="update-debt" placeholder="0.00" min="0">
-                    </div>
+                    <div class="input-group"><label for="update-debt">Actualizar Deuda Total (RD$)</label><input type="number" id="update-debt" placeholder="0.00" min="0"></div>
                     <p class="modal-info">Deja un campo en blanco si no deseas modificarlo.</p>
                     <button type="submit" class="button-primary">Guardar Cambios</button>
                 </form>
-                <div id="late-fee-section" class="late-fee-section hidden">
-                    <hr>
-                    <p>El cliente está atrasado. Puede aplicar el cargo por mora.</p>
-                    <button id="apply-late-fee-button" class="button-danger">Aplicar Cargo por Mora</button>
-                </div>
+                <div id="late-fee-section" class="late-fee-section hidden"><hr><p>El cliente está atrasado. Puede aplicar el cargo por mora.</p><button id="apply-late-fee-button" class="button-danger">Aplicar Cargo por Mora</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NUEVO: Modal para registrar pago (Cobrador) -->
+    <div id="register-payment-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h2 id="modal-collector-client-name"></h2><button class="close-modal-button">&times;</button></div>
+            <div class="modal-body">
+                <form id="register-payment-form">
+                    <div class="input-group">
+                        <label for="collector-new-payment">Monto del Pago (RD$)</label>
+                        <input type="number" id="collector-new-payment" placeholder="0.00" min="1" required>
+                    </div>
+                    <p class="modal-info">Este pago requerirá aprobación del administrador.</p>
+                    <button type="submit" class="button-primary">Registrar Pago</button>
+                </form>
             </div>
         </div>
     </div>
@@ -161,10 +183,7 @@
     <!-- Modal para crear cliente (Admin) -->
     <div id="create-client-modal" class="modal-overlay hidden">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2>Crear Nuevo Cliente</h2>
-                <button class="close-modal-button">&times;</button>
-            </div>
+            <div class="modal-header"><h2>Crear Nuevo Cliente</h2><button class="close-modal-button">&times;</button></div>
             <div class="modal-body">
                 <form id="create-client-form">
                     <div id="personal-data-step">
@@ -194,10 +213,7 @@
     <!-- Modal para seleccionar plan de pago -->
     <div id="payment-plan-modal" class="modal-overlay hidden">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2>Seleccionar Plan de Pago</h2>
-                <button class="close-modal-button">&times;</button>
-            </div>
+            <div class="modal-header"><h2>Seleccionar Plan de Pago</h2><button class="close-modal-button">&times;</button></div>
             <div class="modal-body">
                 <p>Elija el plan de pago para el nuevo cliente.</p>
                 <form id="select-plan-form">
@@ -211,8 +227,6 @@
     
     <!-- Elemento para notificaciones (toast) -->
     <div id="notification-toast" class="toast hidden"></div>
-
-    <!-- Se eliminó el bloque de script de Firebase -->
     
     <script src="scripth.js"></script>
 </body>
