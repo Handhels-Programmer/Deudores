@@ -1,3 +1,5 @@
+// El código de Firebase ha sido eliminado. La app ahora usa datos locales.
+
 document.addEventListener('DOMContentLoaded', () => {
     // Variable para almacenar todos los clientes para la búsqueda
     let allClients = [];
