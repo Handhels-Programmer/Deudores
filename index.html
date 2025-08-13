@@ -8,6 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- NUEVO: CDNs para Tailwind y Chart.js -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Archivo de estilos CSS -->
     <link rel="stylesheet" href="estiloh.css">
 </head>
@@ -27,7 +30,6 @@
                         <label for="role">Tipo de Usuario</label>
                         <select id="role" name="role">
                             <option value="cliente">Cliente</option>
-                            <!-- NUEVO: Rol de Cobrador añadido -->
                             <option value="cobrador">Cobrador</option>
                             <option value="administrador">Administrador</option>
                         </select>
@@ -102,13 +104,47 @@
             <h1>Panel de Administración</h1>
             <button class="logout-button">Cerrar Sesión</button>
         </div>
-        <div class="summary-cards">
-            <div class="summary-card"><h4>Clientes Totales</h4><p id="total-clients">0</p></div>
-            <div class="summary-card"><h4>Deuda Total Pendiente</h4><p id="total-outstanding-debt">RD$ 0.00</p></div>
-            <div class="summary-card"><h4>Total Recaudado (Aprobado)</h4><p id="total-collected">RD$ 0.00</p></div>
-        </div>
         <div class="dashboard-content">
-             <!-- NUEVO: Contenedor para Pagos Pendientes -->
+            
+            <!-- INICIO: Dashboard Financiero Integrado -->
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Dashboard Financiero</h2>
+            <section id="kpi-section" class="mb-6">
+                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="kpi-card">
+                        <h3 class="kpi-title">Deuda Total Pendiente</h3>
+                        <p id="kpi-total-debt" class="kpi-value text-red-700">RD$ 0.00</p>
+                    </div>
+                    <div class="kpi-card">
+                        <h3 class="kpi-title">Total Recaudado (Aprobado)</h3>
+                        <p id="kpi-total-collected" class="kpi-value text-green-700">RD$ 0.00</p>
+                    </div>
+                    <div class="kpi-card">
+                        <h3 class="kpi-title">Pagos Pendientes</h3>
+                        <p id="kpi-pending-payments" class="kpi-value text-yellow-600">RD$ 0.00</p>
+                    </div>
+                    <div class="kpi-card">
+                        <h3 class="kpi-title">Clientes Atrasados</h3>
+                        <p id="kpi-overdue-clients" class="kpi-value text-orange-600">0</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <div class="lg:col-span-2 bg-white p-4 rounded-lg shadow">
+                    <h3 class="font-bold text-lg mb-2">Evolución de Deuda vs. Pagos</h3>
+                    <div class="chart-container">
+                        <canvas id="debtVsPaymentsChart"></canvas>
+                    </div>
+                </div>
+                <div class="lg:col-span-1 bg-white p-4 rounded-lg shadow">
+                     <h3 class="font-bold text-lg mb-2">Estado de Transacciones</h3>
+                    <div class="chart-container">
+                        <canvas id="transactionStatusChart"></canvas>
+                    </div>
+                </div>
+            </section>
+            <!-- FIN: Dashboard Financiero Integrado -->
+
             <div id="pending-payments-section" class="card hidden">
                 <h3>Pagos Pendientes de Aprobación</h3>
                 <div id="pending-payments-list"></div>
@@ -124,7 +160,7 @@
         </div>
     </section>
 
-    <!-- NUEVO: Dashboard del Cobrador -->
+    <!-- Dashboard del Cobrador -->
     <section id="collector-dashboard" class="dashboard hidden">
         <div class="dashboard-header">
             <h1 id="collector-welcome"></h1>
@@ -143,7 +179,7 @@
         </div>
     </section>
 
-    <!-- Modal para gestionar cliente (Admin) -->
+    <!-- Modales (sin cambios) -->
     <div id="manage-client-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="modal-header"><h2 id="modal-client-name"></h2><button class="close-modal-button">&times;</button></div>
@@ -162,8 +198,6 @@
             </div>
         </div>
     </div>
-
-    <!-- NUEVO: Modal para registrar pago (Cobrador) -->
     <div id="register-payment-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="modal-header"><h2 id="modal-collector-client-name"></h2><button class="close-modal-button">&times;</button></div>
@@ -179,8 +213,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Modal para crear cliente (Admin) -->
     <div id="create-client-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="modal-header"><h2>Crear Nuevo Cliente</h2><button class="close-modal-button">&times;</button></div>
@@ -209,8 +241,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Modal para seleccionar plan de pago -->
     <div id="payment-plan-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="modal-header"><h2>Seleccionar Plan de Pago</h2><button class="close-modal-button">&times;</button></div>
@@ -224,8 +254,6 @@
             </div>
         </div>
     </div>
-    
-    <!-- Elemento para notificaciones (toast) -->
     <div id="notification-toast" class="toast hidden"></div>
     
     <script src="scripth.js"></script>

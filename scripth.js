@@ -13,29 +13,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // Dashboards
     const clientDashboard = document.getElementById('client-dashboard');
     const adminDashboard = document.getElementById('admin-dashboard');
-    const collectorDashboard = document.getElementById('collector-dashboard'); // NUEVO
+    const collectorDashboard = document.getElementById('collector-dashboard');
 
     // Admin Dashboard
     const clientListContainer = document.getElementById('client-list-container');
     const clientSearchInput = document.getElementById('client-search-input');
-    const pendingPaymentsSection = document.getElementById('pending-payments-section'); // NUEVO
-    const pendingPaymentsList = document.getElementById('pending-payments-list'); // NUEVO
+    const pendingPaymentsSection = document.getElementById('pending-payments-section');
+    const pendingPaymentsList = document.getElementById('pending-payments-list');
 
     // Collector Dashboard
-    const collectorClientSearch = document.getElementById('collector-client-search'); // NUEVO
-    const collectorClientList = document.getElementById('collector-client-list'); // NUEVO
+    const collectorClientSearch = document.getElementById('collector-client-search');
+    const collectorClientList = document.getElementById('collector-client-list');
     
     // Modales
     const manageClientModal = document.getElementById('manage-client-modal');
     const createClientModal = document.getElementById('create-client-modal');
     const paymentPlanModal = document.getElementById('payment-plan-modal');
-    const registerPaymentModal = document.getElementById('register-payment-modal'); // NUEVO
+    const registerPaymentModal = document.getElementById('register-payment-modal');
 
     // Formularios
     const manageClientForm = document.getElementById('manage-client-form');
     const createClientForm = document.getElementById('create-client-form');
     const selectPlanForm = document.getElementById('select-plan-form');
-    const registerPaymentForm = document.getElementById('register-payment-form'); // NUEVO
+    const registerPaymentForm = document.getElementById('register-payment-form');
 
 
     // --- INICIALIZACIÓN AL CARGAR LA PÁGINA ---
@@ -51,17 +51,17 @@ document.addEventListener('DOMContentLoaded', () => {
     manageClientForm.addEventListener('submit', handleSaveChanges);
     document.getElementById('apply-late-fee-button').addEventListener('click', handleApplyLateFee);
     document.getElementById('create-client-button').addEventListener('click', () => createClientModal.classList.remove('hidden'));
-    pendingPaymentsList.addEventListener('click', handlePendingPaymentAction); // NUEVO
+    pendingPaymentsList.addEventListener('click', handlePendingPaymentAction);
 
     // Eventos Cobrador
-    collectorClientList.addEventListener('click', handleCollectorClientListClick); // NUEVO
-    collectorClientSearch.addEventListener('input', handleCollectorClientSearch); // NUEVO
-    registerPaymentForm.addEventListener('submit', handleRegisterPayment); // NUEVO
+    collectorClientList.addEventListener('click', handleCollectorClientListClick);
+    collectorClientSearch.addEventListener('input', handleCollectorClientSearch);
+    registerPaymentForm.addEventListener('submit', handleRegisterPayment);
 
-    // Eventos Modales (Comunes y Creación)
+    // Eventos Modales
     manageClientModal.querySelector('.close-modal-button').addEventListener('click', () => manageClientModal.classList.add('hidden'));
     createClientModal.querySelector('.close-modal-button').addEventListener('click', () => closeCreateClientModal());
-    registerPaymentModal.querySelector('.close-modal-button').addEventListener('click', () => registerPaymentModal.classList.add('hidden')); // NUEVO
+    registerPaymentModal.querySelector('.close-modal-button').addEventListener('click', () => registerPaymentModal.classList.add('hidden'));
     paymentPlanModal.querySelector('.close-modal-button').addEventListener('click', () => paymentPlanModal.classList.add('hidden'));
     
     // Navegación creación de cliente
@@ -81,14 +81,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const user = users[username];
 
         if (user && user.password === password && user.role === role) {
-            currentLoggedInUser = { username, ...user }; // Guardar usuario logueado
+            currentLoggedInUser = { username, ...user };
             errorMessage.classList.remove('show');
             mainContainer.classList.add('hidden');
             if (role === 'cliente') {
                 showClientDashboard(user);
             } else if (role === 'administrador') {
                 showAdminDashboard();
-            } else if (role === 'cobrador') { // NUEVO: Lógica para cobrador
+            } else if (role === 'cobrador') {
                 showCollectorDashboard(user);
             }
         } else {
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleLogout() {
         clientDashboard.classList.add('hidden');
         adminDashboard.classList.add('hidden');
-        collectorDashboard.classList.add('hidden'); // NUEVO
+        collectorDashboard.classList.add('hidden');
         mainContainer.classList.remove('hidden');
         loginForm.reset();
         currentLoggedInUser = null;
@@ -114,9 +114,12 @@ document.addEventListener('DOMContentLoaded', () => {
             .filter(([, user]) => user.role === 'cliente')
             .map(([id, data]) => ({ id, ...data }));
         
+        // Renderizar componentes originales
         renderClientList(allClients, clientListContainer, 'admin');
-        updateSummaryCards(allClients);
-        renderPendingPayments(allClients); // NUEVO
+        renderPendingPayments(allClients);
+
+        // NUEVO: Renderizar el dashboard financiero
+        renderFinancialDashboard(allClients);
     }
     
     function renderClientList(clients, container, userRole) {
@@ -126,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tableHTML += `<tr><td colspan="4" style="text-align:center;">No hay clientes registrados.</td></tr>`;
         } else {
             clients.forEach(client => {
-                const balance = calculateBalance(client.account, true); // Admin ve balance real
+                const balance = calculateBalance(client.account, true);
                 const dueDate = client.account.nextDueDate ? new Date(client.account.nextDueDate) : null;
                 const lateStatus = isLate(dueDate) ? '<span class="status-late">Atrasado</span>' : '';
                 const actionButton = userRole === 'admin' 
@@ -146,15 +149,16 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML = tableHTML;
     }
 
-    // NUEVO: Renderiza la lista de pagos pendientes para el admin
     function renderPendingPayments(clients) {
         const pending = [];
         clients.forEach(client => {
-            client.account.paymentHistory.forEach((p, index) => {
-                if (p.status === 'pending') {
-                    pending.push({ ...p, clientName: client.profile.fullName, clientId: client.id, paymentIndex: index });
-                }
-            });
+            if (client.account && client.account.paymentHistory) {
+                client.account.paymentHistory.forEach((p, index) => {
+                    if (p.status === 'pending') {
+                        pending.push({ ...p, clientName: client.profile.fullName, clientId: client.id, paymentIndex: index });
+                    }
+                });
+            }
         });
 
         if (pending.length === 0) {
@@ -187,22 +191,96 @@ document.addEventListener('DOMContentLoaded', () => {
         renderClientList(filteredClients, clientListContainer, 'admin');
     }
 
-    function updateSummaryCards(clients) {
-        const totalClients = clients.length;
-        const totalOutstandingDebt = clients.reduce((sum, client) => sum + calculateBalance(client.account, false), 0);
-        const totalCollected = clients.reduce((sum, client) => {
-            const approvedPayments = client.account.paymentHistory
-                .filter(p => p.type === 'payment' && p.status === 'approved')
-                .reduce((s, p) => s + p.amount, 0);
-            return sum + approvedPayments;
-        }, 0);
+    // --- LÓGICA DEL DASHBOARD FINANCIERO (NUEVO) ---
+    function renderFinancialDashboard(clients) {
+        const allTransactions = Object.values(users).flatMap(u => u.account?.paymentHistory || []);
 
-        document.getElementById('total-clients').textContent = totalClients;
-        document.getElementById('total-outstanding-debt').textContent = `RD$ ${formatCurrency(totalOutstandingDebt)}`;
-        document.getElementById('total-collected').textContent = `RD$ ${formatCurrency(totalCollected)}`;
+        // 1. Update KPIs
+        const totalDebt = clients.reduce((sum, client) => sum + calculateBalance(client.account, true), 0);
+        const totalCollected = allTransactions
+            .filter(t => t.type === 'payment' && t.status === 'approved')
+            .reduce((sum, t) => sum + t.amount, 0);
+        const pendingPayments = allTransactions
+            .filter(t => t.type === 'payment' && t.status === 'pending')
+            .reduce((sum, t) => sum + t.amount, 0);
+        const overdueClients = clients.filter(c => isLate(c.account?.nextDueDate)).length;
+        
+        document.getElementById('kpi-total-debt').textContent = formatCurrency(totalDebt);
+        document.getElementById('kpi-total-collected').textContent = formatCurrency(totalCollected);
+        document.getElementById('kpi-pending-payments').textContent = formatCurrency(pendingPayments);
+        document.getElementById('kpi-overdue-clients').textContent = overdueClients;
+
+        // 2. Render Charts
+        renderDebtVsPaymentsChart(allTransactions);
+        renderTransactionStatusChart(allTransactions);
+    }
+    
+    let debtChartInstance, statusChartInstance;
+
+    function renderDebtVsPaymentsChart(transactions) {
+        const ctx = document.getElementById('debtVsPaymentsChart').getContext('2d');
+        if(debtChartInstance) debtChartInstance.destroy();
+
+        const monthlyData = {};
+        transactions.forEach(t => {
+            const date = new Date(t.date);
+            const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            if (!monthlyData[month]) {
+                monthlyData[month] = { payments: 0 };
+            }
+            if (t.type === 'payment' && t.status === 'approved') {
+                monthlyData[month].payments += t.amount;
+            }
+        });
+
+        const labels = Object.keys(monthlyData).sort();
+        const paymentData = labels.map(month => monthlyData[month].payments);
+        
+        debtChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels.map(l => new Date(l).toLocaleString('es-ES', { month: 'short', year: 'numeric' })),
+                datasets: [{
+                    label: 'Pagos Aprobados',
+                    data: paymentData,
+                    backgroundColor: 'rgba(47, 133, 90, 0.7)',
+                    borderColor: 'rgba(47, 133, 90, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+        });
     }
 
-    // --- DASHBOARD DE COBRADOR (NUEVO) ---
+    function renderTransactionStatusChart(transactions) {
+        const ctx = document.getElementById('transactionStatusChart').getContext('2d');
+        if(statusChartInstance) statusChartInstance.destroy();
+
+        const statusData = transactions
+            .filter(t => t.type === 'payment')
+            .reduce((acc, t) => {
+                acc[t.status] = (acc[t.status] || 0) + t.amount;
+                return acc;
+            }, {});
+
+        statusChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Aprobado', 'Pendiente', 'Rechazado'],
+                datasets: [{
+                    label: 'Monto por Estado',
+                    data: [ statusData.approved || 0, statusData.pending || 0, statusData.rejected || 0 ],
+                    backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
+        });
+    }
+
+
+    // --- DASHBOARD DE COBRADOR ---
     function showCollectorDashboard(userData) {
         collectorDashboard.classList.remove('hidden');
         document.getElementById('collector-welcome').textContent = `Bienvenido, Cobrador ${userData.profile.fullName}`;
@@ -221,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- DASHBOARD DE CLIENTE ---
     function showClientDashboard(userData) {
         clientDashboard.classList.remove('hidden');
-        const balance = calculateBalance(userData.account, false); // Cliente solo ve balance con pagos aprobados
+        const balance = calculateBalance(userData.account, false);
         const approvedPayments = userData.account.paymentHistory
             .filter(p => p.type === 'payment' && p.status === 'approved')
             .reduce((sum, p) => sum + p.amount, 0);
@@ -234,7 +312,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('payments-made').textContent = formatCurrency(approvedPayments);
         document.getElementById('current-balance').textContent = formatCurrency(balance);
         
-        // Renderizar solo transacciones aprobadas
         const approvedHistory = userData.account.paymentHistory.filter(t => t.status === 'approved');
         renderPaymentHistory(approvedHistory);
         
@@ -272,7 +349,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- LÓGICA DE MODALES Y ACCIONES ---
-
     function handleAdminClientListClick(event) {
         if (event.target.classList.contains('button-manage')) {
             const username = event.target.dataset.username;
@@ -280,14 +356,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function handleCollectorClientListClick(event) { // NUEVO
+    function handleCollectorClientListClick(event) {
         if (event.target.classList.contains('button-register-payment')) {
             const username = event.target.dataset.username;
             openRegisterPaymentModal(username, users[username]);
         }
     }
 
-    function handleSaveChanges(event) { // Admin registra pago directo
+    function handleSaveChanges(event) {
         event.preventDefault();
         const username = event.target.dataset.username;
         const user = users[username];
@@ -299,10 +375,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 amount: newPayment,
                 date: new Date().toISOString(),
                 type: 'payment',
-                status: 'approved', // Pagos de admin son aprobados automáticamente
+                status: 'approved',
                 collector: 'admin'
             });
-            // Lógica de actualización de fecha de pago
             const planAmount = user.account.paymentPlan.amount;
             if (planAmount && newPayment >= planAmount) {
                 user.account.nextDueDate = getNextDueDate(user.account.nextDueDate, user.account.paymentPlan.frequency).toISOString();
@@ -318,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showAdminDashboard();
     }
 
-    function handleRegisterPayment(event) { // Cobrador registra pago pendiente
+    function handleRegisterPayment(event) {
         event.preventDefault();
         const username = event.target.dataset.username;
         const user = users[username];
@@ -329,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 amount: newPayment,
                 date: new Date().toISOString(),
                 type: 'payment',
-                status: 'pending', // Pagos de cobrador quedan pendientes
+                status: 'pending',
                 collector: currentLoggedInUser.username
             });
             showNotification("Pago registrado. Pendiente de aprobación.", "success");
@@ -340,7 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function handlePendingPaymentAction(event) { // Admin aprueba o rechaza
+    function handlePendingPaymentAction(event) {
         const button = event.target;
         const clientId = button.dataset.clientId;
         const paymentIndex = parseInt(button.dataset.paymentIndex, 10);
@@ -352,18 +427,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (button.classList.contains('button-approve')) {
             payment.status = 'approved';
-            // Opcional: Actualizar fecha de próximo pago si el pago cumple la cuota
             const planAmount = client.account.paymentPlan.amount;
             if (planAmount && payment.amount >= planAmount) {
                  client.account.nextDueDate = getNextDueDate(client.account.nextDueDate, client.account.paymentPlan.frequency).toISOString();
             }
             showNotification("Pago aprobado.", "success");
         } else if (button.classList.contains('button-reject')) {
-            // En lugar de borrar, se podría marcar como 'rejected'
             client.account.paymentHistory.splice(paymentIndex, 1);
             showNotification("Pago rechazado.", "error");
         }
-        showAdminDashboard(); // Recargar vista de admin
+        showAdminDashboard();
     }
     
     function handleApplyLateFee(event) {
@@ -377,7 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
             amount: lateFee,
             date: new Date().toISOString(),
             type: 'late_fee',
-            status: 'approved' // Cargos por mora son directos
+            status: 'approved'
         });
         user.account.nextDueDate = getNextDueDate(user.account.nextDueDate, user.account.paymentPlan.frequency).toISOString();
         
@@ -402,7 +475,7 @@ document.addEventListener('DOMContentLoaded', () => {
         manageClientModal.classList.remove('hidden');
     }
 
-    function openRegisterPaymentModal(username, user) { // NUEVO
+    function openRegisterPaymentModal(username, user) {
         if (!user) return;
         document.getElementById('modal-collector-client-name').textContent = `Registrar pago para: ${user.profile.fullName}`;
         registerPaymentForm.dataset.username = username;
@@ -410,7 +483,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- LÓGICA DE CREACIÓN DE CLIENTE ---
-    function handleNextStep() { /* Sin cambios */
+    function handleNextStep() {
         const errorMessage = document.getElementById('create-error-message-step1');
         const newUsername = document.getElementById('new-username').value.toLowerCase().trim();
         if (!document.getElementById('new-fullname').value || !newUsername || !document.getElementById('new-password').value) {
@@ -438,11 +511,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('personal-data-step').classList.add('hidden');
         document.getElementById('loan-conditions-step').classList.remove('hidden');
     }
-    function handlePrevStep() { /* Sin cambios */
+    function handlePrevStep() {
         document.getElementById('loan-conditions-step').classList.add('hidden');
         document.getElementById('personal-data-step').classList.remove('hidden');
     }
-    function handleGeneratePlans(event) { /* Sin cambios */
+    function handleGeneratePlans(event) {
         event.preventDefault();
         tempNewClientData.account = {
             totalDebt: parseFloat(document.getElementById('initial-debt').value),
@@ -458,7 +531,7 @@ document.addEventListener('DOMContentLoaded', () => {
         createClientModal.classList.add('hidden');
         paymentPlanModal.classList.remove('hidden');
     }
-    function handleConfirmPlan(event) { /* Sin cambios */
+    function handleConfirmPlan(event) {
         event.preventDefault();
         const selectedPlanInput = document.querySelector('input[name="payment-plan"]:checked');
         const errorMessage = document.getElementById('plan-error-message');
@@ -478,14 +551,14 @@ document.addEventListener('DOMContentLoaded', () => {
         closeCreateClientModal();
         showAdminDashboard();
     }
-    function closeCreateClientModal() { /* Sin cambios */
+    function closeCreateClientModal() {
         createClientModal.classList.add('hidden');
         createClientForm.reset();
         document.getElementById('personal-data-step').classList.remove('hidden');
         document.getElementById('loan-conditions-step').classList.add('hidden');
         document.getElementById('create-error-message-step1').classList.remove('show');
     }
-    function calculateAndShowPlans(principal, termInMonths, monthlyInterest) { /* Sin cambios */
+    function calculateAndShowPlans(principal, termInMonths, monthlyInterest) {
         const container = document.getElementById('plan-options-container');
         container.innerHTML = '';
         const monthlyInterestRate = monthlyInterest / 100;
@@ -516,14 +589,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return account.totalDebt - totalPayments;
     }
     
-    function isLate(dueDate) { /* Sin cambios */
+    function isLate(dueDate) {
         if (!dueDate) return false;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         return new Date(dueDate) < today;
     }
 
-    function getNextDueDate(currentDate, frequency) { /* Sin cambios */
+    function getNextDueDate(currentDate, frequency) {
         const date = new Date(currentDate);
         switch (frequency) {
             case 'Mensual': date.setMonth(date.getMonth() + 1); break;
@@ -533,11 +606,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return date;
     }
     
-    function formatCurrency(amount) { /* Sin cambios */
+    function formatCurrency(amount) {
         return (amount || 0).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    function showNotification(message, type = 'success') { /* Sin cambios */
+    function showNotification(message, type = 'success') {
         notificationToast.textContent = message;
         notificationToast.className = `toast show ${type}`;
         setTimeout(() => {
@@ -546,7 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- APIs EXTERNAS ---
-    function fetchExternalData() { /* Sin cambios */
+    function fetchExternalData() {
         fetch('https://api.open-meteo.com/v1/forecast?latitude=18.48&longitude=-69.94&current=temperature_2m,weather_code')
             .then(response => response.json()).then(data => {
                 document.getElementById('weather-temp').textContent = `${data.current.temperature_2m}°C`;
@@ -557,13 +630,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('dollar-rate-value').textContent = data.rates.DOP.toFixed(2);
             }).catch(error => { console.error("Error fetching dollar rate:", error); document.getElementById('dollar-rate-value').textContent = 'Error'; });
     }
-    function getWeatherDescription(code) { /* Sin cambios */
+    function getWeatherDescription(code) {
         const descriptions = { 0: 'Despejado', 1: 'Principalmente despejado', 2: 'Parcialmente nublado', 3: 'Nublado', 45: 'Niebla', 48: 'Niebla con escarcha', 51: 'Llovizna ligera', 53: 'Llovizna moderada', 55: 'Llovizna densa', 61: 'Lluvia ligera', 63: 'Lluvia moderada', 65: 'Lluvia fuerte', 80: 'Chubascos ligeros', 81: 'Chubascos moderados', 82: 'Chubascos violentos', 95: 'Tormenta eléctrica' };
         return descriptions[code] || 'No disponible';
     }
 });
 
-// --- BASE DE DATOS LOCAL DE EJEMPLO (ACTUALIZADA) ---
+// --- BASE DE DATOS LOCAL DE EJEMPLO ---
 const users = {
     'juanperez': {
         password: '123',
@@ -574,7 +647,6 @@ const users = {
             paymentHistory: [
                 { amount: 5000, date: '2025-06-15T14:00:00Z', type: 'payment', status: 'approved', collector: 'admin' },
                 { amount: 10000, date: '2025-07-16T15:30:00Z', type: 'payment', status: 'approved', collector: 'admin' },
-                // NUEVO: Pago pendiente de ejemplo
                 { amount: 2500, date: '2025-07-29T18:00:00Z', type: 'payment', status: 'pending', collector: 'carloscobro' }
             ],
             paymentPlan: { frequency: 'Mensual', amount: 5500 },
@@ -601,10 +673,14 @@ const users = {
         role: 'administrador',
         profile: { fullName: 'Administrador' }
     },
-    // NUEVO: Usuario cobrador de ejemplo
     'carloscobro': {
         password: '789',
         role: 'cobrador',
         profile: { fullName: 'Carlos Cobro' }
+    },
+    'carlos': {
+        password: '147',
+        role: 'cobrador',
+        profile: { fullName: 'Carlos Ramirez' }
     }
 };
